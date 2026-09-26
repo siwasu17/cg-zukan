@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body { margin: 0; } [hidden] { display: none !important; }</style>
+<link rel="stylesheet" href="../../assets/css/series.css">
+<title>毛と流体の球体図鑑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #15171b;
+    --panel: #1b1e23;
+    --line: #2c3038;
+    --ink: #ece8e0;
+    --muted: #9da2ac;
+    --accent: #f0a54a;
+    --stage: #22252a;
+  }
+  html, body { background: var(--bg); color: var(--ink); }
+  body {
+    font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+    font-size: 15px; line-height: 1.75;
+  }
+  #gl { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; display: block; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding-inline: 20px; padding-block: 44px 96px; }
+
+  header.top h1 {
+    font-family: "Dela Gothic One", "Zen Kaku Gothic New", sans-serif; font-weight: 400;
+    font-size: clamp(34px, 6.4vw, 66px); line-height: 1.15; margin: 0 0 18px; letter-spacing: .01em;
+    text-wrap: balance;
+  }
+  .eyebrow { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  .lead { max-width: 42em; font-size: 16px; margin: 0; }
+  .note { max-width: 42em; color: var(--muted); font-size: 13.5px; margin: 10px 0 0; }
+  .note a { color: var(--accent); }
+
+  nav { display: grid; gap: 10px; margin-top: 30px; }
+  nav .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  nav .row b { font-size: 13px; color: var(--muted); font-weight: 500; min-width: 3.5em; }
+  nav a {
+    color: var(--ink); text-decoration: none; font-size: 13.5px;
+    border: 1px solid var(--line); padding: 5px 13px; border-radius: 999px; background: var(--panel);
+  }
+  nav a:hover, nav a:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+
+  .part { margin-top: 88px; border-top: 1px solid var(--line); padding-top: 28px; }
+  .part > header { display: grid; gap: 8px; }
+  .part h2 {
+    font-family: "Dela Gothic One", "Zen Kaku Gothic New", sans-serif; font-weight: 400;
+    font-size: clamp(28px, 4.4vw, 44px); line-height: 1.2; margin: 0;
+  }
+  .part > header p { margin: 0; max-width: 44em; font-size: 15px; }
+
+  section { margin-top: 56px; scroll-margin-top: 20px; }
+  section > header { display: grid; gap: 6px; margin-bottom: 20px; }
+  section h3 { font-size: clamp(20px, 2.6vw, 25px); line-height: 1.35; margin: 0; font-weight: 700; text-wrap: balance; }
+  section > header p { margin: 0; color: var(--muted); max-width: 46em; font-size: 14.5px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
+  .stage {
+    aspect-ratio: 1; width: 100%; max-width: 100%; background: var(--stage);
+    cursor: grab; touch-action: pan-y; border-bottom: 1px solid var(--line); outline: none;
+  }
+  .stage:active { cursor: grabbing; }
+  .stage:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+  .meta { padding: 12px 14px 16px; display: grid; gap: 4px; }
+  .meta h4 { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.4; }
+  .meta code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11.5px; color: var(--accent); overflow-wrap: anywhere; }
+  .meta p { margin: 2px 0 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+  footer { margin-top: 80px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; }
+  .fail { padding: 16px; border: 1px solid var(--accent); margin-top: 24px; }
+
+  @media (max-width: 560px) {
+    .wrap { padding-inline: 16px; }
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .meta { padding: 10px 10px 12px; }
+    .meta h4 { font-size: 14.5px; }
+    .meta p { font-size: 12.5px; }
+  }
+</style>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Shader ball catalogue · fur &amp; fluids</div>
+    <h1>毛と流体の球体図鑑</h1>
+    <p class="lead">毛と水は、3DCGで特に手ごわい2大テーマです。毛は細すぎて数が多すぎ、液体や煙には決まった形がありません。どちらも「本物どおりに計算する」方法と「それらしく見せてごまかす」方法があり、ここでは軽いごまかしから重い本格派まで、同じ球の上に並べました。ドラッグ（またはフォーカスして矢印キー）で回せます。</p>
+    <p class="note">照明は全カード共通です。<a href="../material/">前編の球体マテリアル図鑑</a>で出てきた「法線」「ノイズ」「透過」などの言葉が、ここでも土台になっています。</p>
+    <nav id="nav" aria-label="カテゴリ"></nav>
+  <div class="series" id="series"></div>
+</header>
+  <main id="main"></main>
+  <footer>three.js r149 と自作の GLSL シェーダー、JavaScript の簡易物理計算でリアルタイムに描画しています。</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script>
+(function () {
+'use strict';
+
+const PARTS = [
+  { id: 'fur', en: 'Part 1 · Fur & hair', title: '毛の表現',
+    lead: '毛は1本がとても細く、数は数万〜数十万本。全部をまともに描くと重すぎるので、「どこまで本物に近づけて、どこでごまかすか」の工夫が積み重なってきました。下のカテゴリほど本物寄りで、そのぶん重くなります。' },
+  { id: 'fluid', en: 'Part 2 · Fluids', title: '流体の表現',
+    lead: '水や煙には決まった形がありません。表面の見た目だけを揺らすごまかしから、粒の動きや煙の中の光を1歩ずつ計算する本格的な方法まであり、実際の作品ではこれらを組み合わせて使います。' }
+];
+const SECTIONS = [
+  { part: 'fur', id: 'fake', en: 'Faking it', title: '毛を描かずに「毛っぽく」見せる',
+    lead: '毛を1本も作らず、表面の塗り方だけで毛らしさを出す方法。最も軽く、遠くのキャラクターや、髪型全体のつやを表すのに使われます。' },
+  { part: 'fur', id: 'shell', en: 'Shell texturing', title: 'シェル法（薄い殻を何枚も重ねる）',
+    lead: '球を少しずつ大きくした薄い殻を何十枚も重ね、各層で「毛がある点」だけを残します。輪切りの写真を積み重ねるような仕組みで、ゲームの毛皮や芝生の定番です。' },
+  { part: 'fur', id: 'strands', en: 'Strands & cards', title: '1本ずつ（または束で）描く',
+    lead: '毛を本当に線や板として形にする方法。映画ではこれを数十万本、ゲームでは毛の束を描いた板ポリゴンを使うのが一般的です。' },
+  { part: 'fluid', id: 'ripple', en: 'Normal animation', title: '表面だけを揺らす',
+    lead: '形はそのままで、光の反射の向き（法線）だけを時間とともに揺らす方法。細かいさざ波ならこれで十分です。' },
+  { part: 'fluid', id: 'deform', en: 'Vertex animation', title: '形ごと揺らす',
+    lead: '頂点を動かして形そのものを変える方法。液体らしさの大部分は「どう揺れるか」で決まります。' },
+  { part: 'fluid', id: 'flow', en: 'Flow patterns', title: '流れを模様で描く',
+    lead: '流体の運動を計算する代わりに、流れていく模様を描く方法。惑星の雲、川の表面、天気図の風などに使います。' },
+  { part: 'fluid', id: 'sim', en: 'Simulation & volumes', title: 'シミュレーションとボリューム',
+    lead: '粒の動きを物理計算したり、煙の中を進む光を少しずつ計算したりする本格派の方法です。そのぶん計算は重くなります。' }
+];
+
+const main = document.getElementById('main');
+const nav = document.getElementById('nav');
+for (const p of PARTS) {
+  const row = document.createElement('div'); row.className = 'row';
+  const b = document.createElement('b'); b.textContent = p.title.replace('の表現', ''); row.appendChild(b);
+  for (const s of SECTIONS.filter(x => x.part === p.id)) { const a = document.createElement('a'); a.href = '#' + s.id; a.textContent = s.title; row.appendChild(a); }
+  nav.appendChild(row);
+}
+function fail(msg) { const d = document.createElement('div'); d.className = 'fail'; d.textContent = msg; main.prepend(d); }
+if (typeof THREE === 'undefined') { fail('3D描画ライブラリを読み込めませんでした。ページを再読み込みしてください。'); return; }
+
+const canvas = document.getElementById('gl');
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); }
+catch (e) { fail('このブラウザでは WebGL が使えないため、球を描画できません。'); return; }
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+renderer.setPixelRatio(DPR);
+renderer.setClearColor(0x000000, 0);
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const L = new THREE.Vector3(-2, 3, 4).normalize();
+const U = { uTime: { value: 0 }, uL: { value: L }, uDpr: { value: DPR } };
+const uni = (extra) => Object.assign({ uTime: U.uTime, uL: U.uL, uDpr: U.uDpr }, extra || {});
+const FOV = 30;
+const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 50);
+camera.position.set(0, 0, 4.25);
+
+function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function ctex(w, h, draw, srgb = true) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); if (srgb) t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
+}
+function randDir(r, minY = -1) { for (;;) { const z = r() * 2 - 1, a = r() * Math.PI * 2, s = Math.sqrt(1 - z * z); const v = [Math.cos(a) * s, z, Math.sin(a) * s]; if (v[1] >= minY) return v; } }
+
+/* environment for PBR reflections */
+function makeEnv() {
+  const room = new THREE.Scene();
+  room.add(new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10), new THREE.MeshBasicMaterial({ color: 0x4a4d54, side: THREE.BackSide })));
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshBasicMaterial({ color: 0x1c1d21 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -4.9; room.add(floor);
+  const panel = (w, h, rgb, pos) => { const m = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }); m.color.setRGB(...rgb); const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m); p.position.set(...pos); p.lookAt(0, 0, 0); room.add(p); };
+  panel(5, 3, [7, 7, 7], [0, 4.8, 0.5]); panel(1.2, 6, [3.5, 3.8, 4.5], [-4.8, 0.5, 1.5]);
+  panel(2, 2, [5, 3.6, 2.4], [4.8, 1, -1.5]); panel(3, 1, [2, 2, 2.2], [0, 1, -4.8]);
+  const pm = new THREE.PMREMGenerator(renderer); const t = pm.fromScene(room, 0.04).texture; pm.dispose(); return t;
+}
+const ENV = makeEnv();
+const BG = ctex(256, 256, (g, w, h) => { const gr = g.createRadialGradient(w * .5, h * .42, 0, w * .5, h * .5, w * .75); gr.addColorStop(0, '#3a3e46'); gr.addColorStop(1, '#1d1f24'); g.fillStyle = gr; g.fillRect(0, 0, w, h); });
+const CHECK = ctex(512, 512, (g, w) => { const n = 8, s = w / n; for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { g.fillStyle = (x + y) % 2 ? '#2f333b' : '#d9d3c4'; g.fillRect(x * s, y * s, s, s); } });
+
+/* JS value noise (for CPU particles) */
+function h3(x, y, z) { let n = Math.imul(x, 374761393) ^ Math.imul(y, 668265263) ^ Math.imul(z, 1440662683); n = Math.imul(n ^ (n >>> 13), 1274126177); n ^= n >>> 16; return (n >>> 0) / 4294967296; }
+function vnoise(x, y, z) {
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z), xf = x - xi, yf = y - yi, zf = z - zi;
+  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf), w = zf * zf * (3 - 2 * zf), l = (a, b, t) => a + (b - a) * t;
+  return l(l(l(h3(xi, yi, zi), h3(xi + 1, yi, zi), u), l(h3(xi, yi + 1, zi), h3(xi + 1, yi + 1, zi), u), v),
+           l(l(h3(xi, yi, zi + 1), h3(xi + 1, yi, zi + 1), u), l(h3(xi, yi + 1, zi + 1), h3(xi + 1, yi + 1, zi + 1), u), v), w);
+}
+
+/* ---------------- GLSL chunks ---------------- */
+const NOISE = `
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+float snoise(vec3 v){
+  const vec2 C=vec2(1.0/6.0,1.0/3.0); const vec4 D=vec4(0.0,0.5,1.0,2.0);
+  vec3 i=floor(v+dot(v,C.yyy)); vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g; vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy;
+  i=mod289(i);
+  vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+  float n_=0.142857142857; vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.0*floor(p*ns.z*ns.z); vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);
+  vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy; vec4 h=1.0-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0; vec4 sh=-step(h,vec4(0.0));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;
+  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0); m=m*m;
+  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}
+float fbm(vec3 p){ float a=0.5, s=0.0; for(int i=0;i<5;i++){ s+=a*snoise(p); p*=2.02; a*=0.5; } return s; }
+float fbm4(vec3 p){ float a=0.5, s=0.0; for(int i=0;i<4;i++){ s+=a*snoise(p); p*=2.03; a*=0.5; } return s; }
+`;
+const VOR = `
+vec3 hash3(vec3 p){ p=vec3(dot(p,vec3(127.1,311.7,74.7)),dot(p,vec3(269.5,183.3,246.1)),dot(p,vec3(113.5,271.9,124.6))); return fract(sin(p)*43758.5453); }
+vec3 vor(vec3 x){
+  vec3 i=floor(x), f=fract(x); float d1=9.0, d2=9.0; vec3 id=vec3(0.0);
+  for(int k=-1;k<=1;k++) for(int j=-1;j<=1;j++) for(int m=-1;m<=1;m++){
+    vec3 g=vec3(float(m),float(j),float(k)); vec3 r=g+hash3(i+g)-f; float d=dot(r,r);
+    if(d<d1){ d2=d1; d1=d; id=i+g; } else if(d<d2){ d2=d; }
+  }
+  return vec3(sqrt(d1), sqrt(d2), hash3(id).x);
+}
+`;
+/* Marschner hair BSDF, real-time approximation (R / TT / TRT lobes, after Karis 2016) */
+const MARSCHNER = `
+float hg(float B, float th){ return exp(-0.5*th*th/(B*B))/(2.5066*B); }
+float hfres(float c){ return 0.046+0.954*pow(1.0-clamp(c,0.0,1.0),5.0); }
+vec3 marschner(vec3 T, vec3 L, vec3 V, vec3 base, float rough, float wR, float wTT, float wTRT){
+  float sL=clamp(dot(T,L),-0.999,0.999), sV=clamp(dot(T,V),-0.999,0.999);
+  vec3 Lp=L-T*sL, Vp=V-T*sV;
+  float cosPhi=dot(Lp,Vp)*inversesqrt(max(dot(Lp,Lp)*dot(Vp,Vp),1e-6));
+  float cosHalfPhi=sqrt(clamp(0.5+0.5*cosPhi,0.0,1.0));
+  float cosThD=cos(0.5*abs(asin(sV)-asin(sL)));
+  float B=0.04+rough*rough; float shift=0.035;
+  vec3 S=vec3(0.0);
+  float Mp=hg(B*1.414*max(cosHalfPhi,0.2), sL+sV-shift*2.0);
+  S+=vec3(Mp*0.25*cosHalfPhi*hfres(sqrt(clamp(0.5+0.5*dot(V,L),0.0,1.0)))*2.0)*wR;
+  Mp=hg(B*0.5, sL+sV+shift);
+  float a=1.0/(1.19/cosThD+0.36*cosThD);
+  float h=cosHalfPhi*(1.0+a*(0.6-0.8*cosPhi));
+  float f=hfres(cosThD*sqrt(max(1.0-h*h,0.0)));
+  vec3 Tp=pow(base,vec3(0.5*sqrt(max(1.0-h*h*a*a,0.0))/cosThD));
+  S+=Mp*exp(-3.65*cosPhi-3.98)*(1.0-f)*(1.0-f)*Tp*wTT;
+  Mp=hg(B*2.0, sL+sV+shift*4.0);
+  f=hfres(cosThD*0.5);
+  Tp=pow(base,vec3(0.8/cosThD));
+  S+=Mp*exp(17.0*cosPhi-16.78)*(1.0-f)*(1.0-f)*f*Tp*wTRT;
+  return S;
+}
+`;
+const VARY = `varying vec3 vN; varying vec3 vP; varying vec3 vW; varying vec2 vUv; varying float vD;`;
+const VERT = `${VARY}
+void main(){ vUv=uv; vP=position; vD=0.0; vec4 w=modelMatrix*vec4(position,1.0); vW=w.xyz; vN=normalize(mat3(modelMatrix)*normal); gl_Position=projectionMatrix*viewMatrix*w; }`;
+const VERT_T = `${VARY} varying vec3 vT;
+void main(){ vUv=uv; vP=position; vD=0.0; vec3 d=normalize(position); vec3 t=vec3(0.0,1.0,0.0)-d*d.y+vec3(1e-4,0.0,0.0);
+  vT=normalize(mat3(modelMatrix)*t);
+  vec4 w=modelMatrix*vec4(position,1.0); vW=w.xyz; vN=normalize(mat3(modelMatrix)*normal); gl_Position=projectionMatrix*viewMatrix*w; }`;
+const HEAD = `uniform float uTime; uniform vec3 uL; uniform float uDpr;
+${VARY}
+vec3 viewDir(){ return normalize(cameraPosition-vW); }
+vec3 shade(vec3 a, vec3 n, float spec, float gloss){
+  float d=max(dot(n,uL),0.0); vec3 h=normalize(uL+viewDir());
+  return a*(0.2+0.9*d)+vec3(pow(max(dot(n,h),0.0),gloss)*spec);
+}
+`;
+function shader(frag, o = {}) {
+  const m = new THREE.ShaderMaterial({
+    uniforms: uni(o.uniforms),
+    vertexShader: o.vert || VERT,
+    fragmentShader: (o.raw ? '' : HEAD) + (o.chunks || '') + frag,
+    transparent: !!o.transparent,
+    depthWrite: o.depthWrite !== undefined ? o.depthWrite : true,
+    blending: o.additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+    side: o.side || THREE.FrontSide
+  });
+  if (o.defines) m.defines = o.defines;
+  if (o.premul) m.premultipliedAlpha = true;
+  return m;
+}
+
+/* PBR material with injected ripples (H), vertex displacement (D) and colour tweaks (C) */
+let fluidKey = 0;
+function fluid(params, o) {
+  const m = new THREE.MeshPhysicalMaterial(params);
+  const key = 'fluid' + (fluidKey++);
+  m.customProgramCacheKey = () => key;
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uTime = U.uTime;
+    const common = `uniform float uTime;\nvarying vec3 vObj;\nvarying float vH;\n${NOISE}\n`;
+    let vs = sh.vertexShader.replace('#include <common>', '#include <common>\n' + common + (o.D ? o.D + '\nvec3 dp(vec3 d){ return d*(1.0+disp(d)); }\n' : ''));
+    if (o.D) {
+      vs = vs.replace('#include <beginnormal_vertex>', `
+        vec3 d0=normalize(position);
+        vec3 up0=abs(d0.y)<0.99?vec3(0.0,1.0,0.0):vec3(1.0,0.0,0.0);
+        vec3 t0=normalize(cross(up0,d0)); vec3 b0=cross(d0,t0);
+        vec3 pp=dp(d0);
+        vec3 objectNormal=normalize(cross(dp(normalize(d0+t0*0.004))-pp, dp(normalize(d0+b0*0.004))-pp));
+        if(dot(objectNormal,d0)<0.0) objectNormal=-objectNormal;
+        #ifdef USE_TANGENT
+          vec3 objectTangent=vec3(tangent.xyz);
+        #endif`).replace('#include <begin_vertex>', 'vec3 transformed=pp; vObj=transformed; vH=disp(d0);');
+    } else {
+      vs = vs.replace('#include <begin_vertex>', '#include <begin_vertex>\nvObj=position; vH=0.0;');
+    }
+    let fs = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + common + 'uniform mat3 normalMatrix;\n' + (o.H || '') + '\n' + (o.C || ''));
+    if (o.H) fs = fs.replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+      { float e=0.01; float h0=H(vObj);
+        vec3 g=vec3(H(vObj+vec3(e,0.0,0.0))-h0, H(vObj+vec3(0.0,e,0.0))-h0, H(vObj+vec3(0.0,0.0,e))-h0)/e;
+        vec3 gv=normalMatrix*g; normal=normalize(normal-${o.bump.toFixed(4)}*(gv-dot(gv,normal)*normal)); }`);
+    if (o.C) fs = fs.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb=C(diffuseColor.rgb, vH, vObj);');
+    sh.vertexShader = vs; sh.fragmentShader = fs;
+  };
+  return m;
+}
+
+const SPH = new THREE.SphereGeometry(1, 128, 96);
+const SPH_F = new THREE.SphereGeometry(1, 96, 64);
+const SPH_HI = new THREE.SphereGeometry(1, 256, 160);
+const mesh = (mat, geo = SPH) => new THREE.Mesh(geo, mat);
+
+/* ---------------- fur helpers ---------------- */
+function shellGeo(layers) {
+  const g = new THREE.InstancedBufferGeometry();
+  g.index = SPH_F.index;
+  g.setAttribute('position', SPH_F.attributes.position); g.setAttribute('normal', SPH_F.attributes.normal); g.setAttribute('uv', SPH_F.attributes.uv);
+  const a = new Float32Array(layers); for (let i = 0; i < layers; i++) a[i] = i / (layers - 1);
+  g.setAttribute('aLayer', new THREE.InstancedBufferAttribute(a, 1)); g.instanceCount = layers; return g;
+}
+const FUR_VERT = `attribute float aLayer; uniform float uTime; uniform float uLen; uniform float uGrav; uniform float uWind;
+${VARY}
+void main(){ vUv=uv; vec3 n=normalize(position); float h=aLayer;
+  vec4 w=modelMatrix*vec4(n*(1.0+h*uLen),1.0);
+  vec3 c=(modelMatrix*vec4(0.0,0.0,0.0,1.0)).xyz; vec3 wn=normalize(w.xyz-c);
+  vec3 wind=vec3(sin(uTime*1.7+w.y*3.0+w.z*2.0),0.0,0.6*cos(uTime*1.3+w.x*3.0))*uWind;
+  vec3 g=vec3(0.0,-1.0,0.0)*uGrav+wind;
+  w.xyz+=(g-wn*dot(g,wn))*h*h*uLen;
+  vP=n; vD=h; vW=w.xyz; vN=wn; gl_Position=projectionMatrix*viewMatrix*w; }`;
+const FUR_FRAG = `uniform float uDensity; uniform vec3 uRoot; uniform vec3 uTip;
+float hash13(vec3 p){ p=fract(p*0.1031); p+=dot(p,p.zyx+31.32); return fract((p.x+p.y)*p.z); }
+void main(){ float h=vD; vec3 nn=normalize(vP);
+  vec3 q=nn*uDensity; vec3 i=floor(q); vec3 f=fract(q)-0.5;
+  vec3 c=(vec3(hash13(i),hash13(i+17.3),hash13(i+41.7))-0.5)*0.45;
+  vec3 dv=f-c; dv-=nn*dot(dv,nn); float dist=length(dv)*2.2;
+  float rnd=hash13(i+3.1); float sl=0.6+0.4*rnd;
+  if(h>0.001){ if(h>sl) discard; if(dist>(1.0-h/sl)*0.95) discard; }
+  vec3 col=mix(uRoot,uTip,smoothstep(0.0,1.0,h));
+  #ifdef LEOPARD
+    vec3 v=vor(nn*4.6);
+    float ring=smoothstep(0.36,0.29,v.x)-smoothstep(0.22,0.15,v.x)*0.75;
+    col=mix(col,vec3(0.09,0.06,0.04),clamp(ring,0.0,1.0)*0.92);
+    col*=mix(vec3(1.0),vec3(0.86,0.66,0.45),smoothstep(0.2,0.1,v.x)*0.6);
+  #endif
+  float ao=mix(0.28,1.0,h);
+  vec3 n=normalize(vN); float dif=clamp(dot(n,uL)*0.55+0.5,0.0,1.0);
+  float rim=pow(1.0-abs(dot(n,viewDir())),3.0);
+  col=col*ao*dif*(0.85+0.3*rnd)+uTip*rim*0.25*h;
+  gl_FragColor=vec4(col,1.0); }`;
+function fur(o) {
+  const m = new THREE.Mesh(shellGeo(o.layers), shader(FUR_FRAG, {
+    vert: FUR_VERT, chunks: o.leopard ? VOR : '', defines: o.leopard ? { LEOPARD: 1 } : undefined,
+    uniforms: { uLen: { value: o.len }, uGrav: { value: o.grav || 0 }, uWind: { value: o.wind || 0 }, uDensity: { value: o.density },
+      uRoot: { value: new THREE.Color(o.root) }, uTip: { value: new THREE.Color(o.tip) } }
+  }));
+  m.frustumCulled = false; m.scale.setScalar(1.06 / (1 + o.len * .9)); return m;
+}
+
+/* ---------------- catalogue ---------------- */
+const ITEMS = [
+  /* ---- fur: faking ---- */
+  { s: 'fake', name: '産毛', tag: 'MeshPhysicalMaterial · sheen',
+    desc: '桃の表面のような短い産毛。毛の代わりに「輪郭付近がふわっと明るくなる」反射だけを足しています。前編のベルベットと同じ仕組みです。',
+    make: () => mesh(new THREE.MeshPhysicalMaterial({ color: 0xe98d6a, roughness: .85, sheen: 1, sheenColor: new THREE.Color(0xfff0e2), sheenRoughness: .35 })) },
+  { s: 'fake', name: '描いた毛並み', tag: 'stretched noise',
+    desc: '一方向に引き伸ばしたノイズで毛並みの模様を描いただけ。輪郭はつるつるなので、近くで見ると毛ではないと分かります。遠景用のいちばん軽い方法です。',
+    make: () => mesh(shader(`void main(){ vec3 n=normalize(vN); vec3 p=vP;
+      float s=snoise(vec3(p.x*60.0,p.y*5.0,p.z*60.0))*0.5+0.5;
+      float s2=snoise(vec3(p.x*150.0,p.y*9.0,p.z*150.0))*0.5+0.5;
+      float stripe=smoothstep(0.1,0.6,sin(atan(p.z,p.x)*7.0+fbm(p*2.0)*4.0));
+      vec3 a=mix(vec3(0.92,0.58,0.27),vec3(0.36,0.17,0.07),stripe*0.85);
+      a*=0.62+0.55*s*s2;
+      vec3 col=a*(0.3+0.8*clamp(dot(n,uL)*0.6+0.45,0.0,1.0));
+      col+=vec3(1.0,0.85,0.6)*pow(1.0-max(dot(n,viewDir()),0.0),3.0)*0.18;
+      gl_FragColor=vec4(col,1.0); }`, { chunks: NOISE })) },
+  { s: 'fake', name: '髪のつや（異方性ハイライト）', tag: 'Kajiya-Kay',
+    desc: '髪は細い円柱の集まりなので、ハイライトが点ではなく、毛の向きと直角な「帯」になります（カジヤ・ケイ法）。白い帯と色付きの2本目の帯をずらして重ねるのは、次のマーシュナー法の観察結果を手軽に真似た工夫です。',
+    make: () => mesh(shader(`varying vec3 vT;
+      float kk(vec3 T, vec3 H, float e){ float th=dot(T,H); return pow(sqrt(max(0.0,1.0-th*th)),e); }
+      void main(){ vec3 n=normalize(vN); vec3 T=normalize(vT); vec3 V=viewDir(); vec3 H=normalize(uL+V);
+        float st=snoise(vec3(vP.x*45.0,vP.y*4.0,vP.z*45.0));
+        vec3 T1=normalize(T+n*(0.12+st*0.12)); vec3 T2=normalize(T-n*(0.12-st*0.08));
+        float dif=clamp(dot(n,uL)*0.7+0.35,0.0,1.0);
+        vec3 base=vec3(0.22,0.11,0.05)*(0.75+0.5*(st*0.5+0.5));
+        vec3 col=base*dif+vec3(1.0,0.95,0.9)*kk(T1,H,140.0)*0.4*dif+vec3(0.85,0.5,0.25)*kk(T2,H,30.0)*0.45*dif;
+        gl_FragColor=vec4(col,1.0); }`, { vert: VERT_T, chunks: NOISE })) },
+  { s: 'fake', name: 'マーシュナー法', tag: 'Marschner · R / TT / TRT',
+    desc: '髪の毛1本に入った光の通り道を3つに分けて計算します。表面で跳ね返る白いつや（R）、毛の中を通り抜ける光（TT）、中で1回反射して戻ってくる髪色のつや（TRT）です。毛の表面のうろこのせいで、2つのつやは上下にずれます。今の映画やゲームの髪の標準的な考え方です。',
+    make: () => mesh(marschnerSphere(L)) },
+  { s: 'fake', name: 'マーシュナー法（逆光）', tag: 'Marschner · TT lobe',
+    desc: '同じ髪に、このカードだけ後ろから光を当てています。正面からは見えなかった「毛の中を通り抜けた光」（TT）が輪郭で金色に光ります。逆光で髪が光って見える現象です。カジヤ・ケイ法ではこれが出せません。',
+    make: () => mesh(marschnerSphere(new THREE.Vector3(.5, .45, -1).normalize())) },
+  { s: 'fake', name: '天使の輪（アニメ塗り）', tag: 'toon + Kajiya-Kay',
+    desc: '左の帯状ハイライトを、2段階の塗りとギザギザの縁取りで描いたもの。アニメキャラクターの髪でおなじみの表現です。外側の黒い線は、少し大きな裏返しの球で描いています。',
+    make: () => { const g = new THREE.Group();
+      g.add(mesh(shader(`varying vec3 vT;
+        void main(){ vec3 n=normalize(vN); vec3 T=normalize(vT); vec3 H=normalize(uL+viewDir());
+          float ndl=dot(n,uL);
+          vec3 col=mix(vec3(0.11,0.12,0.27),vec3(0.21,0.25,0.5),smoothstep(0.08,0.14,ndl));
+          float th=dot(T,H); float s=sqrt(max(0.0,1.0-th*th));
+          float az=atan(vP.z,vP.x); float zig=abs(fract(az*5.73)-0.5)*2.0;
+          float band=step(0.975-0.035*zig,s)*step(0.1,ndl);
+          col=mix(col,vec3(0.72,0.8,1.0),band);
+          gl_FragColor=vec4(col,1.0); }`, { vert: VERT_T })));
+      const o = mesh(new THREE.MeshBasicMaterial({ color: 0x0c0c14, side: THREE.BackSide })); o.scale.setScalar(1.04); g.add(o); return g; } },
+
+  /* ---- fur: shells ---- */
+  { s: 'shell', name: 'シェル法の基本', tag: '40 shells',
+    desc: '40枚の殻を重ね、各層で毛の断面だけを残しています。根元に近い層ほど暗く塗って、毛の奥に光が届かない様子を表しています。',
+    make: () => fur({ layers: 40, len: .14, density: 62, grav: .25, wind: .05, root: 0x3b2618, tip: 0xe7c9a0 }) },
+  { s: 'shell', name: '層が少ないと…', tag: '6 shells',
+    desc: '同じ仕組みで殻を6枚に減らしたもの。1枚1枚の層が透けて見えてしまいます。層を増やすほどきれいで、そのぶん重くなります。',
+    make: () => fur({ layers: 6, len: .3, density: 26, grav: 0, root: 0x3b2618, tip: 0xe7c9a0 }) },
+  { s: 'shell', name: '長毛・重力・風', tag: 'shells + gravity + wind',
+    desc: '外側の層ほど下にずらして重力を、時間で揺らして風を表しています。球を回しても、毛は常に画面の下へ垂れます。',
+    make: () => fur({ layers: 56, len: .34, density: 70, grav: 1.0, wind: .35, root: 0x5a5a62, tip: 0xf1f0ec }) },
+  { s: 'shell', name: 'ヒョウ柄の毛皮', tag: 'shells + Voronoi spots',
+    desc: 'シェル法の毛に、ボロノイで作った斑点で色を付けたもの。模様が毛の根元から毛先まで続いているので、毛に色が付いているように見えます。',
+    make: () => fur({ layers: 36, len: .1, density: 70, grav: .2, root: 0x5b3a17, tip: 0xf0c27a, leopard: true }) },
+  { s: 'shell', name: '芝生', tag: 'shells as grass',
+    desc: '毛を緑にして密度を上げ、風で揺らすと芝生になります。ゲームの草地にも同じ方法が使われます。',
+    make: () => fur({ layers: 36, len: .2, density: 90, grav: .05, wind: .45, root: 0x0f2a0c, tip: 0xb9d95a }) },
+
+  /* ---- fur: strands ---- */
+  { s: 'strands', name: '1本ずつの髪（ライン）', tag: '5,000 lines + Kajiya-Kay',
+    desc: '5000本の髪を1本ずつ線で描いています。重力で垂れ、頭に当たると表面に沿って流れます。球を回すと、垂れる向きが変わります。',
+    make: () => lineHair(false) },
+  { s: 'strands', name: '1本ずつの髪（マーシュナー）', tag: '5,000 lines + Marschner',
+    desc: '同じ5000本の線を、マーシュナー法で塗ったもの。明るい髪色にしているので、白いつやと髪色のつやの2本が、少しずれた位置に出るのが分かります。',
+    make: () => lineHair(true) },
+  { s: 'strands', name: 'ヘアカード（板ポリ）', tag: 'alpha-tested cards',
+    desc: '毛の束を描いた画像を小さな板に貼り、600枚生やしたもの。ゲームのキャラクターの髪はたいていこの方法です。板を真横から見ると薄くなって消えてしまいます。',
+    make: () => hairCards() },
+  { s: 'strands', name: '綿毛', tag: 'line segments',
+    desc: 'タンポポの綿毛。中心から伸びる軸と、先端で傘のように広がる細い毛を、線だけで組み立てています。',
+    make: () => dandelion() },
+
+  /* ---- fluid: ripples ---- */
+  { s: 'ripple', name: '水の球（さざ波）', tag: 'transmission + animated normals',
+    desc: 'ガラスの球の、面の向きだけをノイズで揺らしています。形は完全な球のままで、映り込みと屈折の揺らぎだけで水らしく見えます。',
+    backdrop: true,
+    make: () => mesh(fluid({ color: 0xe8f6ff, metalness: 0, roughness: .03, transmission: 1, ior: 1.33, thickness: 1.6 },
+      { H: `float H(vec3 p){ return 0.5*snoise(p*5.0+vec3(0.0,uTime*0.8,0.0))+0.25*snoise(p*11.0-vec3(uTime*0.9,0.0,uTime*0.4)); }`, bump: .03 })) },
+  { s: 'ripple', name: '水銀の表面', tag: 'metalness 1 + animated normals',
+    desc: '同じさざ波を、鏡のような金属に乗せたもの。映り込みがゆらゆら揺れるだけで、液体の金属に見えます。',
+    make: () => mesh(fluid({ color: 0xdfe3e8, metalness: 1, roughness: .05 },
+      { H: `float H(vec3 p){ return 0.6*snoise(p*3.5+vec3(uTime*0.3,0.0,0.0))+0.3*snoise(p*8.0-uTime*0.5); }`, bump: .03 })) },
+
+  /* ---- fluid: deform ---- */
+  { s: 'deform', name: 'ぷるぷる水滴', tag: 'vertex · oscillation modes',
+    desc: '無重力の水滴が震える様子。上下に伸び縮みする揺れ、横に伸び縮みする揺れなど、数種類の基本的な揺れを足し合わせて形を作っています。',
+    backdrop: true,
+    make: () => { const m = mesh(fluid({ color: 0xeaf7ff, metalness: 0, roughness: .02, transmission: 1, ior: 1.33, thickness: 1.6 },
+      { D: `float disp(vec3 d){ float t=uTime; return 0.075*sin(t*3.1)*(1.5*d.y*d.y-0.5)+0.055*sin(t*4.3+1.0)*(d.x*d.x-d.z*d.z)+0.035*sin(t*5.7+2.0)*d.x*d.y*d.z*5.0; }` }), SPH_HI); m.scale.setScalar(.88); return m; } },
+  { s: 'deform', name: '液体金属', tag: 'vertex noise + chrome',
+    desc: 'ノイズで形をうねらせた鏡面の球。SF映画に出てくる液体金属のロボットのような質感です。',
+    make: () => { const m = mesh(fluid({ color: 0xe6e8ec, metalness: 1, roughness: .06 },
+      { D: `float disp(vec3 d){ return 0.13*snoise(d*1.4+vec3(0.0,0.0,uTime*0.35))+0.04*snoise(d*3.3-uTime*0.5); }` }), SPH_HI); m.scale.setScalar(.84); return m; } },
+  { s: 'deform', name: '蜂蜜', tag: 'vertex + attenuation color',
+    desc: 'ゆっくり変形する、色付きの半透明の塊。厚みのある部分ほど光が吸収されて濃い色になります（減衰色）。動きを遅くすると、ねばりのある液体に見えます。',
+    backdrop: true,
+    make: () => { const m = mesh(fluid({ color: 0xffe2a0, metalness: 0, roughness: .06, transmission: 1, ior: 1.45, thickness: 1.8, attenuationColor: new THREE.Color(0xd06a0a), attenuationDistance: .55 },
+      { D: `float disp(vec3 d){ return 0.09*snoise(d*1.2+vec3(uTime*0.1,uTime*0.07,0.0))+0.03*snoise(d*2.6-uTime*0.08); }` }), SPH_HI); m.scale.setScalar(.88); return m; } },
+  { s: 'deform', name: '海の惑星', tag: 'summed waves + foam',
+    desc: '向きの違う4つの波を足して頂点を上下させ、波の山の部分だけを白く塗って白波にしています。細かいさざ波は法線の揺らぎで足しています。',
+    make: () => mesh(fluid({ color: 0x0b3b72, metalness: 0, roughness: .12, clearcoat: .6, clearcoatRoughness: .05 }, {
+      D: `float wv(vec3 d, vec3 dir, float k, float w, float a){ return a*sin(dot(d,normalize(dir))*k-uTime*w); }
+        float disp(vec3 d){ return wv(d,vec3(1.0,0.2,0.0),18.0,1.6,0.012)+wv(d,vec3(0.3,1.0,0.5),23.0,2.1,0.009)+wv(d,vec3(-0.6,0.1,1.0),29.0,2.7,0.007)+wv(d,vec3(0.8,-0.5,-0.4),13.0,1.2,0.014); }`,
+      H: `float H(vec3 p){ return snoise(p*14.0+vec3(uTime*0.4,0.0,uTime*0.3)); }`, bump: .012,
+      C: `vec3 C(vec3 base, float h, vec3 p){ float f=smoothstep(0.02,0.036,h+0.008*snoise(p*30.0)); return mix(base,vec3(0.92,0.96,1.0),f); }` }), SPH_HI) },
+
+  /* ---- fluid: flow ---- */
+  { s: 'flow', name: 'フローマップ', tag: 'two-phase flow',
+    desc: '流れの向きを決めておき、その向きへ模様を少しずつずらします。ずらし続けると模様が伸びきるので、タイミングを半周期ずらした2枚を交互にフェードさせて繰り返しています。',
+    make: () => mesh(shader(`
+      vec3 F(vec3 p){ vec3 f=cross(vec3(0.0,1.0,0.0),p)*(0.8+0.6*sin(p.y*5.0));
+        f+=0.5*cross(p,vec3(snoise(p*1.3),snoise(p*1.3+7.1),snoise(p*1.3+13.7))); return f; }
+      void main(){ vec3 n=normalize(vN); vec3 p=normalize(vP);
+        float sp=0.2; float ph0=fract(uTime*sp), ph1=fract(uTime*sp+0.5);
+        float w0=1.0-abs(1.0-2.0*ph0);
+        vec3 f=F(p);
+        float a=fbm((p-f*ph0*0.6)*3.5); float b=fbm((p-f*ph1*0.6)*3.5+vec3(3.7,1.3,2.9));
+        float s=a*w0+b*(1.0-w0);
+        vec3 col=mix(vec3(0.03,0.2,0.33),vec3(0.3,0.64,0.8),smoothstep(-0.3,0.3,s));
+        col=mix(col,vec3(0.9,0.97,1.0),smoothstep(0.22,0.5,s)*0.85);
+        gl_FragColor=vec4(shade(col,n,0.6,80.0),1.0); }`, { chunks: NOISE })) },
+  { s: 'flow', name: 'ガス惑星', tag: 'domain warping',
+    desc: 'ノイズで座標そのものをゆがめる「ドメインワープ」で、縞と渦を作っています。さらに緯度ごとに回転の速さを変えて、帯どうしがずれていくようにしています。',
+    make: () => mesh(shader(`void main(){ vec3 n=normalize(vN); vec3 p=normalize(vP);
+      float lat=p.y; float ang=uTime*(0.04+0.06*sin(lat*9.0));
+      float c=cos(ang), s=sin(ang); vec3 q=vec3(c*p.x-s*p.z,p.y,s*p.x+c*p.z);
+      vec3 w=vec3(fbm4(q*2.0),fbm4(q*2.0+5.2),fbm4(q*2.0+9.1));
+      float b=sin((lat+0.12*fbm(q*vec3(2.5,7.0,2.5)+w*2.2))*24.0);
+      vec3 col=mix(vec3(0.93,0.86,0.72),vec3(0.72,0.42,0.22),b*0.5+0.5);
+      col=mix(col,vec3(0.45,0.25,0.14),smoothstep(0.2,0.6,fbm4(q*5.0+w*3.0))*0.5);
+      gl_FragColor=vec4(shade(col,n,0.05,20.0),1.0); }`, { chunks: NOISE })) },
+  { s: 'flow', name: '風の流れ（粒子の移流）', tag: 'curl noise + particles',
+    desc: '1400個の粒子を、渦を巻く流れの場に乗せて動かし、通った跡を線で残しています。天気図の風のアニメーションと同じ方法です。',
+    make: () => windGlobe() },
+  { s: 'flow', name: 'チョコがけ', tag: 'procedural drip boundary',
+    desc: '液体がかかった範囲を、場所ごとに長さの違う「垂れ」の数式で切り抜いています。本物のシミュレーションではなく、見た目のトリックです。',
+    make: () => { const g = new THREE.Group();
+      g.add(mesh(new THREE.MeshStandardMaterial({ color: 0xe6c08c, roughness: .85 })));
+      const c = mesh(shader(`void main(){ vec3 p=normalize(vP);
+        vec2 az=normalize(p.xz+vec2(1e-5));
+        float dn=snoise(vec3(az*2.6,1.7))*0.5+0.5; float dn2=snoise(vec3(az*7.0,4.2))*0.5+0.5;
+        float grow=0.88+0.12*sin(uTime*0.6+dn*6.0);
+        float drip=pow(dn,3.0)*0.95*grow+pow(dn2,4.0)*0.35;
+        float edge=0.25-drip+0.04*snoise(p*6.0);
+        if(p.y<edge) discard;
+        vec3 n=normalize(vN); vec3 V=viewDir(); vec3 h=normalize(uL+V);
+        vec3 col=vec3(0.24,0.12,0.06)*(0.25+0.8*max(dot(n,uL),0.0))
+          +vec3(pow(max(dot(n,h),0.0),90.0)*0.9)+vec3(0.9,0.8,0.7)*pow(1.0-max(dot(n,V),0.0),4.0)*0.15;
+        gl_FragColor=vec4(col,1.0); }`, { chunks: NOISE }));
+      c.scale.setScalar(1.03); g.add(c); return g; } },
+
+  /* ---- fluid: sim & volumes ---- */
+  { s: 'sim', name: '粒子の水（SPH風）', tag: 'particle simulation',
+    desc: 'ガラス球の中の水を420個の粒として計算しています。粒どうしは押し合い、重力で下に溜まります。球を回すと、中の水が揺れて流れます。',
+    make: () => waterGlass() },
+  { s: 'sim', name: '雲（ボリュームレンダリング）', tag: 'ray marching',
+    desc: '球の内側を視線に沿って少しずつ進みながら、各地点の雲の濃さと、そこまで太陽光がどれだけ届くかを足し合わせています。表面ではなく「中身」を描く方法です。',
+    make: () => volume('cloud') },
+  { s: 'sim', name: '炎', tag: 'emissive volume',
+    desc: '雲と同じ方法で、上へ流れるノイズを光の源として足し合わせています。濃いところほど黄色から白に、薄いところは赤く光ります。',
+    make: () => volume('fire') }
+];
+
+/* ---------------- builders that need more code ---------------- */
+function marschnerSphere(lv) {
+  return shader(`uniform vec3 uLm; varying vec3 vT;
+    void main(){ vec3 n=normalize(vN); vec3 V=viewDir();
+      float st=snoise(vec3(vP.x*45.0,vP.y*4.0,vP.z*45.0));
+      vec3 T=normalize(-normalize(vT)+n*st*0.06);
+      vec3 base=vec3(0.82,0.6,0.34)*(0.85+0.3*(st*0.5+0.5));
+      float shadow=mix(0.3,1.0,clamp(dot(n,uLm)*0.5+0.5,0.0,1.0));
+      float rim=pow(1.0-abs(dot(n,V)),1.5);
+      float sT=dot(T,uLm); float kd=sqrt(max(0.0,1.0-sT*sT));
+      vec3 S=marschner(T,uLm,V,base,0.35,1.0,0.0,1.0)*shadow+marschner(T,uLm,V,base,0.35,0.0,1.0,0.0)*mix(0.15,1.0,rim);
+      vec3 col=S*3.0+base*kd*0.28*shadow*clamp(dot(n,uLm)+0.3,0.0,1.0)+base*0.07;
+      gl_FragColor=vec4(col,1.0); }`, { vert: VERT_T, chunks: NOISE + MARSCHNER, uniforms: { uLm: { value: lv } } });
+}
+
+function lineHair(useMarschner) {
+  const S = 5000, K = 12, r = rng(11), n = S * K * 2;
+  const pos = new Float32Array(n * 3), root = new Float32Array(n * 3), aT = new Float32Array(n), aR = new Float32Array(n);
+  let o = 0;
+  for (let s = 0; s < S; s++) {
+    const d = randDir(r, -0.05), rr = r();
+    for (let k = 0; k < K; k++) for (let e = 0; e < 2; e++) {
+      pos.set(d, o * 3); root.set(d, o * 3); aT[o] = (k + e) / K; aR[o] = rr; o++;
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aRoot', new THREE.BufferAttribute(root, 3));
+  g.setAttribute('aT', new THREE.BufferAttribute(aT, 1)); g.setAttribute('aRand', new THREE.BufferAttribute(aR, 1));
+  const mat = new THREE.ShaderMaterial({ uniforms: uni(),
+    vertexShader: `uniform float uTime; attribute vec3 aRoot; attribute float aT; attribute float aRand;
+      varying float vT; varying vec3 vTan; varying vec3 vNw; varying float vR; varying vec3 vWp;
+      vec3 hp(float t, vec3 c, vec3 wn, float len){
+        vec3 wind=vec3(sin(uTime*1.1+aRand*6.0)*0.12,0.0,cos(uTime*0.8+aRand*4.0)*0.06);
+        vec3 p=c+wn+wn*len*t*0.35+(vec3(0.0,-0.95,0.0)+wind)*len*t*t;
+        vec3 d=p-c; float l=length(d); if(l<1.02) p=c+d/l*1.02; return p; }
+      void main(){ vec3 c=(modelMatrix*vec4(0.0,0.0,0.0,1.0)).xyz; vec3 wn=normalize(mat3(modelMatrix)*aRoot);
+        float len=0.45+0.4*aRand; vec3 p=hp(aT,c,wn,len); vec3 p2=hp(aT+0.03,c,wn,len);
+        vTan=normalize(p2-p+vec3(1e-5)); vT=aT; vR=aRand; vNw=normalize(p-c); vWp=p;
+        gl_Position=projectionMatrix*viewMatrix*vec4(p,1.0); }`,
+    fragmentShader: `uniform vec3 uL; varying float vT; varying vec3 vTan; varying vec3 vNw; varying float vR; varying vec3 vWp;
+      ${useMarschner ? MARSCHNER : ''}
+      void main(){ vec3 V=normalize(cameraPosition-vWp); vec3 H=normalize(uL+V);
+        float tl=dot(vTan,uL); float kd=sqrt(max(0.0,1.0-tl*tl));
+        float sh=clamp(dot(vNw,uL)*0.7+0.5,0.15,1.0);
+        ${useMarschner ? `
+        vec3 base=mix(vec3(0.5,0.34,0.17),vec3(0.86,0.66,0.4),vT)*(0.85+0.3*vR);
+        vec3 S=marschner(normalize(vTan),uL,V,base,0.3,1.0,1.0,1.0);
+        gl_FragColor=vec4(S*3.0*sh+base*kd*0.3*sh+base*0.06,1.0); }` : `
+        float th=dot(vTan,H); float s1=pow(sqrt(max(0.0,1.0-th*th)),90.0);
+        vec3 base=mix(vec3(0.1,0.05,0.025),vec3(0.42,0.24,0.12),vT)*(0.8+0.4*vR);
+        gl_FragColor=vec4((base*(0.3+0.7*kd)+vec3(1.0,0.86,0.7)*s1*0.35)*sh,1.0); }`}` });
+  const lines = new THREE.LineSegments(g, mat); lines.frustumCulled = false;
+  const grp = new THREE.Group(); grp.add(mesh(new THREE.MeshStandardMaterial({ color: useMarschner ? 0x6b4a22 : 0x2a180c, roughness: .9 }))); grp.add(lines);
+  grp.scale.setScalar(.8); return grp;
+}
+
+function hairCards() {
+  const tex = ctex(128, 512, (g, w, h) => {
+    g.clearRect(0, 0, w, h); const r = rng(5);
+    for (let i = 0; i < 46; i++) {
+      const x0 = 8 + r() * (w - 16), dx = (r() - .5) * 40, top = r() * h * .35;
+      const gr = g.createLinearGradient(0, h, 0, top);
+      const c = r() < .8 ? [200 + r() * 40, 90 + r() * 50, 30 + r() * 20] : [245, 235, 220];
+      gr.addColorStop(0, `rgba(${c[0] * .45 | 0},${c[1] * .45 | 0},${c[2] * .45 | 0},1)`); gr.addColorStop(.7, `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},1)`); gr.addColorStop(1, `rgba(255,240,220,0)`);
+      g.strokeStyle = gr; g.lineWidth = 2 + r() * 4; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(x0, h); g.quadraticCurveTo(x0 + dx * .3, h * .5, x0 + dx, top); g.stroke();
+    }
+  }, false);
+  const N = 600, r = rng(21), P = [], Nn = [], UV = [], I = [];
+  for (let i = 0; i < N; i++) {
+    const d = new THREE.Vector3(...randDir(r));
+    const t = new THREE.Vector3(r() - .5, r() - .5, r() - .5).cross(d).normalize();
+    const side = new THREE.Vector3().crossVectors(d, t).normalize();
+    const up = d.clone().multiplyScalar(1).addScaledVector(t, .45 + r() * .3).normalize();
+    const w = .2, hgt = .28 + r() * .12, base = d.clone().multiplyScalar(.98), k = P.length / 3;
+    const v0 = base.clone().addScaledVector(side, -w / 2), v1 = base.clone().addScaledVector(side, w / 2);
+    const v2 = v0.clone().addScaledVector(up, hgt), v3 = v1.clone().addScaledVector(up, hgt);
+    for (const v of [v0, v1, v2, v3]) { P.push(v.x, v.y, v.z); Nn.push(d.x, d.y, d.z); }
+    UV.push(0, 0, 1, 0, 0, 1, 1, 1); I.push(k, k + 1, k + 2, k + 1, k + 3, k + 2);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(Nn, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(UV, 2)); g.setIndex(I);
+  const cards = new THREE.Mesh(g, shader(`uniform sampler2D uMap;
+    void main(){ vec4 tx=texture2D(uMap,vUv); if(tx.a<0.45) discard; vec3 n=normalize(vN);
+      float dif=clamp(dot(n,uL)*0.6+0.45,0.0,1.0);
+      gl_FragColor=vec4(tx.rgb*dif*(0.55+0.45*vUv.y),1.0); }`, { uniforms: { uMap: { value: tex } }, side: THREE.DoubleSide }));
+  const grp = new THREE.Group(); grp.add(mesh(new THREE.MeshStandardMaterial({ color: 0x4a200a, roughness: .95 }))); grp.add(cards);
+  grp.scale.setScalar(.82); return grp;
+}
+
+function dandelion() {
+  const N = 180, T = 14, ga = Math.PI * (3 - Math.sqrt(5)), P = [], C = [], r = rng(3);
+  const cBase = [0.45, 0.32, 0.18], cStalk = [0.92, 0.9, 0.84], cTuft = [1, 1, 1];
+  for (let k = 0; k < N; k++) {
+    const y = 1 - (k + .5) / N * 2, rr = Math.sqrt(1 - y * y), a = k * ga;
+    const d = new THREE.Vector3(Math.cos(a) * rr, y, Math.sin(a) * rr);
+    const s0 = d.clone().multiplyScalar(.24), s1 = d.clone().multiplyScalar(.3), s2 = d.clone().multiplyScalar(.78 + r() * .06);
+    P.push(s0.x, s0.y, s0.z, s1.x, s1.y, s1.z); C.push(...cBase, ...cBase);
+    P.push(s1.x, s1.y, s1.z, s2.x, s2.y, s2.z); C.push(...cStalk, ...cStalk);
+    const t = new THREE.Vector3(0, 1, 0).cross(d); if (t.lengthSq() < 1e-4) t.set(1, 0, 0); t.normalize(); const b = new THREE.Vector3().crossVectors(d, t);
+    for (let i = 0; i < T; i++) {
+      const ang = i / T * Math.PI * 2 + r() * .3; const dir = d.clone().multiplyScalar(.55).addScaledVector(t, Math.cos(ang)).addScaledVector(b, Math.sin(ang)).normalize();
+      const e = s2.clone().addScaledVector(dir, .2 + r() * .05);
+      P.push(s2.x, s2.y, s2.z, e.x, e.y, e.z); C.push(...cStalk, ...cTuft);
+    }
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(C, 3));
+  const grp = new THREE.Group();
+  grp.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: .85 })));
+  grp.add(mesh(new THREE.MeshStandardMaterial({ color: 0x6b5132, roughness: .9 }), new THREE.SphereGeometry(.24, 48, 32)));
+  grp.scale.setScalar(1.05); return grp;
+}
+
+function windGlobe() {
+  const N = 1400, K = 10, r = rng(17);
+  const P = new Float32Array(N * 3), Hs = new Float32Array(N * K * 3), life = new Float32Array(N), age = new Float32Array(N), spd = new Float32Array(N);
+  const SEG = N * (K - 1), lp = new Float32Array(SEG * 6), lc = new Float32Array(SEG * 8);
+  const spawn = (i) => { const d = randDir(r); for (let k = 0; k < K; k++) Hs.set([d[0] * 1.01, d[1] * 1.01, d[2] * 1.01], (i * K + k) * 3); P.set(d, i * 3); life[i] = 2 + r() * 4; age[i] = 0; };
+  for (let i = 0; i < N; i++) { spawn(i); age[i] = r() * life[i]; }
+  const g = new THREE.BufferGeometry();
+  const pa = new THREE.BufferAttribute(lp, 3); pa.setUsage(THREE.DynamicDrawUsage);
+  const ca = new THREE.BufferAttribute(lc, 4); ca.setUsage(THREE.DynamicDrawUsage);
+  g.setAttribute('position', pa); g.setAttribute('color', ca);
+  const lines = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
+  lines.frustumCulled = false;
+  const psi = (x, y, z, t) => vnoise(x * 1.8 + t, y * 1.8, z * 1.8 - t * .5) + .5 * vnoise(x * 3.7 - t * .7, y * 3.7 + 11, z * 3.7);
+  const grp = new THREE.Group();
+  grp.add(mesh(new THREE.MeshStandardMaterial({ color: 0x0f1a2b, roughness: .75, metalness: .1 })));
+  grp.add(lines);
+  grp.userData.update = (t, dt) => {
+    const e = .02, tt = t * .06, sp = .16;
+    for (let i = 0; i < N; i++) {
+      let x = P[i * 3], y = P[i * 3 + 1], z = P[i * 3 + 2];
+      const gx = (psi(x + e, y, z, tt) - psi(x - e, y, z, tt)) / (2 * e), gy = (psi(x, y + e, z, tt) - psi(x, y - e, z, tt)) / (2 * e), gz = (psi(x, y, z + e, tt) - psi(x, y, z - e, tt)) / (2 * e);
+      const vx = (y * gz - z * gy) * sp, vy = (z * gx - x * gz) * sp, vz = (x * gy - y * gx) * sp;
+      spd[i] = Math.hypot(vx, vy, vz);
+      x += vx * dt; y += vy * dt; z += vz * dt; const l = Math.hypot(x, y, z); x /= l; y /= l; z /= l;
+      P[i * 3] = x; P[i * 3 + 1] = y; P[i * 3 + 2] = z;
+      const b = i * K * 3; Hs.copyWithin(b + 3, b, b + (K - 1) * 3); Hs[b] = x * 1.01; Hs[b + 1] = y * 1.01; Hs[b + 2] = z * 1.01;
+      age[i] += dt; if (age[i] > life[i]) spawn(i);
+    }
+    let s = 0;
+    for (let i = 0; i < N; i++) {
+      const fade = Math.min(1, age[i] / .5, (life[i] - age[i]) / .5), sv = Math.min(1, spd[i] * 1.4);
+      const cr = .35 + .65 * sv, cg = .75 + .25 * sv, cb = 1 - .35 * sv;
+      for (let k = 0; k < K - 1; k++, s++) {
+        const a = (i * K + k) * 3, b2 = (i * K + k + 1) * 3;
+        lp[s * 6] = Hs[a]; lp[s * 6 + 1] = Hs[a + 1]; lp[s * 6 + 2] = Hs[a + 2]; lp[s * 6 + 3] = Hs[b2]; lp[s * 6 + 4] = Hs[b2 + 1]; lp[s * 6 + 5] = Hs[b2 + 2];
+        const a0 = (1 - k / (K - 1)) * fade, a1 = (1 - (k + 1) / (K - 1)) * fade;
+        lc.set([cr, cg, cb, a0, cr, cg, cb, a1], s * 8);
+      }
+    }
+    pa.needsUpdate = true; ca.needsUpdate = true;
+  };
+  return grp;
+}
+
+function waterGlass() {
+  const N = 420, R = .86, H = .12, H2 = H * H, r = rng(9);
+  const P = new Float32Array(N * 3), V = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) { let p; do { p = [(r() * 2 - 1) * R, -r() * R, (r() * 2 - 1) * R]; } while (Math.hypot(...p) > R * .95); P.set(p, i * 3); }
+  const geo = new THREE.BufferGeometry(); const pa = new THREE.BufferAttribute(P, 3); pa.setUsage(THREE.DynamicDrawUsage); geo.setAttribute('position', pa);
+  const mat = new THREE.ShaderMaterial({ uniforms: uni({ uScale: { value: 300 }, uSize: { value: .11 } }),
+    vertexShader: `uniform float uScale; uniform float uSize; void main(){ vec4 mv=modelViewMatrix*vec4(position,1.0); gl_PointSize=uSize*uScale/-mv.z; gl_Position=projectionMatrix*mv; }`,
+    fragmentShader: `uniform vec3 uL; void main(){ vec2 c=gl_PointCoord*2.0-1.0; float r2=dot(c,c); if(r2>1.0) discard;
+      vec3 n=vec3(c.x,-c.y,sqrt(1.0-r2)); float d=max(dot(n,uL),0.0); vec3 h=normalize(uL+vec3(0.0,0.0,1.0));
+      vec3 col=vec3(0.1,0.42,0.85)*(0.35+0.75*d)+vec3(pow(max(dot(n,h),0.0),60.0)*0.8)+vec3(0.2,0.5,0.8)*pow(1.0-n.z,2.0)*0.4;
+      gl_FragColor=vec4(col,1.0); }` });
+  const pts = new THREE.Points(geo, mat); pts.frustumCulled = false;
+  const shell = mesh(shader(`void main(){ vec3 n=normalize(vN); vec3 v=viewDir(); float fr=pow(1.0-abs(dot(n,v)),3.0);
+    float sp=pow(max(dot(n,normalize(uL+v)),0.0),150.0);
+    gl_FragColor=vec4(vec3(0.6,0.8,1.0)*(fr*0.55+0.015)+vec3(sp*0.9),1.0); }`, { transparent: true, additive: true, depthWrite: false, side: THREE.DoubleSide }));
+  shell.renderOrder = 2;
+  const grp = new THREE.Group(); grp.add(pts); grp.add(shell);
+  const q = new THREE.Quaternion(), gv = new THREE.Vector3(), grid = new Map();
+  const key = (x, y, z) => ((Math.floor(x / H) + 16) * 64 + (Math.floor(y / H) + 16)) * 64 + (Math.floor(z / H) + 16);
+  function step(dt) {
+    grid.clear();
+    for (let i = 0; i < N; i++) { const k = key(P[i * 3], P[i * 3 + 1], P[i * 3 + 2]); let a = grid.get(k); if (!a) grid.set(k, a = []); a.push(i); }
+    for (let i = 0; i < N; i++) { V[i * 3] += gv.x * dt; V[i * 3 + 1] += gv.y * dt; V[i * 3 + 2] += gv.z * dt; }
+    for (let i = 0; i < N; i++) {
+      const px = P[i * 3], py = P[i * 3 + 1], pz = P[i * 3 + 2];
+      const cx = Math.floor(px / H), cy = Math.floor(py / H), cz = Math.floor(pz / H);
+      for (let ox = -1; ox <= 1; ox++) for (let oy = -1; oy <= 1; oy++) for (let oz = -1; oz <= 1; oz++) {
+        const a = grid.get(((cx + ox + 16) * 64 + (cy + oy + 16)) * 64 + (cz + oz + 16)); if (!a) continue;
+        for (const j of a) {
+          if (j <= i) continue;
+          const dx = P[j * 3] - px, dy = P[j * 3 + 1] - py, dz = P[j * 3 + 2] - pz, d2 = dx * dx + dy * dy + dz * dz;
+          if (d2 >= H2 || d2 < 1e-10) continue;
+          const d = Math.sqrt(d2), qq = 1 - d / H, nx = dx / d, ny = dy / d, nz = dz / d;
+          let imp = 55 * qq * qq * dt;
+          const u = (V[i * 3] - V[j * 3]) * nx + (V[i * 3 + 1] - V[j * 3 + 1]) * ny + (V[i * 3 + 2] - V[j * 3 + 2]) * nz;
+          if (u > 0) imp += dt * qq * (3 * u + 2 * u * u) * .5;
+          V[i * 3] -= nx * imp; V[i * 3 + 1] -= ny * imp; V[i * 3 + 2] -= nz * imp;
+          V[j * 3] += nx * imp; V[j * 3 + 1] += ny * imp; V[j * 3 + 2] += nz * imp;
+        }
+      }
+    }
+    for (let i = 0; i < N; i++) {
+      let x = P[i * 3] + V[i * 3] * dt, y = P[i * 3 + 1] + V[i * 3 + 1] * dt, z = P[i * 3 + 2] + V[i * 3 + 2] * dt;
+      const l = Math.hypot(x, y, z);
+      if (l > R) { const nx = x / l, ny = y / l, nz = z / l; x = nx * R; y = ny * R; z = nz * R;
+        const vn = V[i * 3] * nx + V[i * 3 + 1] * ny + V[i * 3 + 2] * nz;
+        if (vn > 0) { V[i * 3] -= nx * vn * 1.4; V[i * 3 + 1] -= ny * vn * 1.4; V[i * 3 + 2] -= nz * vn * 1.4; }
+        V[i * 3] *= .985; V[i * 3 + 1] *= .985; V[i * 3 + 2] *= .985; }
+      V[i * 3] *= .999; V[i * 3 + 1] *= .999; V[i * 3 + 2] *= .999;
+      P[i * 3] = x; P[i * 3 + 1] = y; P[i * 3 + 2] = z;
+    }
+  }
+  grp.userData.update = (t, dt, rect, root) => {
+    q.copy(root.quaternion).invert(); gv.set(0, -3.2, 0).applyQuaternion(q);
+    step(1 / 120); step(1 / 120);
+    pa.needsUpdate = true;
+    mat.uniforms.uScale.value = rect.height * DPR / (2 * Math.tan(FOV / 2 * Math.PI / 180));
+  };
+  return grp;
+}
+
+function volume(kind) {
+  const u = { uCamObj: { value: new THREE.Vector3() }, uLObj: { value: new THREE.Vector3() }, uUpObj: { value: new THREE.Vector3() } };
+  const head = `uniform vec3 uCamObj; uniform vec3 uLObj; uniform vec3 uUpObj;
+    float hashf(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }`;
+  const cloud = `
+    float dens(vec3 p){ float r=length(p); float shape=1.0-smoothstep(0.3,0.95,r);
+      float n=fbm4(p*2.2+vec3(uTime*0.04,uTime*0.08,0.0)); return clamp((n+shape*0.95-0.45)*2.3,0.0,1.0); }
+    void main(){ vec3 ro=uCamObj; vec3 rd=normalize(vP-ro);
+      float b=dot(ro,rd); float c=dot(ro,ro)-1.0; float hh=b*b-c; if(hh<0.0) discard;
+      float s=sqrt(hh); float t0=max(-b-s,0.0), t1=-b+s;
+      const int STEPS=30; float dt=(t1-t0)/float(STEPS); float t=t0+dt*hashf(gl_FragCoord.xy);
+      float T=1.0; vec3 col=vec3(0.0);
+      for(int i=0;i<STEPS;i++){ vec3 p=ro+rd*t; float d=dens(p);
+        if(d>0.01){ float ld=0.0; for(int j=1;j<=3;j++){ ld+=dens(p+uLObj*0.13*float(j)); }
+          float Tl=exp(-ld*0.9);
+          vec3 lc=vec3(1.0,0.96,0.9)*Tl*1.15+vec3(0.33,0.4,0.52)*0.55;
+          float a=1.0-exp(-d*dt*9.0); col+=T*a*lc; T*=1.0-a; if(T<0.02) break; }
+        t+=dt; }
+      gl_FragColor=vec4(col,1.0-T); }`;
+  const fire = `
+    vec3 ramp(float x){ vec3 c=mix(vec3(0.5,0.04,0.01),vec3(1.0,0.35,0.04),smoothstep(0.0,0.35,x));
+      c=mix(c,vec3(1.0,0.78,0.3),smoothstep(0.35,0.7,x)); return mix(c,vec3(1.0,0.97,0.85),smoothstep(0.7,1.0,x)); }
+    float fd(vec3 p){ float r=length(p); float up=dot(p,uUpObj);
+      float n=fbm4(p*2.4-uUpObj*uTime*1.3);
+      float shape=1.0-smoothstep(0.15,0.9,r-up*0.25);
+      return clamp(n*1.1+shape*1.2-0.62,0.0,1.0); }
+    void main(){ vec3 ro=uCamObj; vec3 rd=normalize(vP-ro);
+      float b=dot(ro,rd); float c=dot(ro,ro)-1.0; float hh=b*b-c; if(hh<0.0) discard;
+      float s=sqrt(hh); float t0=max(-b-s,0.0), t1=-b+s;
+      const int STEPS=30; float dt=(t1-t0)/float(STEPS); float t=t0+dt*hashf(gl_FragCoord.xy);
+      float T=1.0; vec3 col=vec3(0.0);
+      for(int i=0;i<STEPS;i++){ float d=fd(ro+rd*t);
+        if(d>0.0){ col+=T*ramp(d)*d*dt*7.0; T*=exp(-d*dt*2.2); }
+        t+=dt; }
+      gl_FragColor=vec4(col,1.0); }`;
+  const m = mesh(shader(kind === 'cloud' ? cloud : fire, {
+    chunks: NOISE + head, uniforms: u, transparent: true, depthWrite: false,
+    premul: kind === 'cloud', additive: kind === 'fire'
+  }), SPH_F);
+  const inv = new THREE.Matrix4();
+  m.onBeforeRender = (rdr, sc, cam) => {
+    inv.copy(m.matrixWorld).invert();
+    u.uCamObj.value.copy(cam.position).applyMatrix4(inv);
+    u.uLObj.value.copy(L).transformDirection(inv);
+    u.uUpObj.value.set(0, 1, 0).transformDirection(inv);
+  };
+  return m;
+}
+
+/* ---------------- DOM + scenes ---------------- */
+const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const views = [];
+for (const part of PARTS) {
+  const pe = document.createElement('div'); pe.className = 'part'; pe.id = part.id;
+  pe.innerHTML = `<header><div class="eyebrow">${part.en}</div><h2>${part.title}</h2><p>${part.lead}</p></header>`;
+  for (const sec of SECTIONS.filter(s => s.part === part.id)) {
+    const el = document.createElement('section'); el.id = sec.id;
+    el.innerHTML = `<header><div class="eyebrow">${sec.en}</div><h3>${sec.title}</h3><p>${sec.lead}</p></header><div class="grid"></div>`;
+    const grid = el.querySelector('.grid');
+    for (const it of ITEMS.filter(i => i.s === sec.id)) {
+      const card = document.createElement('article'); card.className = 'card';
+      const stage = document.createElement('div'); stage.className = 'stage'; stage.tabIndex = 0;
+      stage.setAttribute('role', 'img'); stage.setAttribute('aria-label', it.name + 'の球（ドラッグで回転）');
+      const meta = document.createElement('div'); meta.className = 'meta'; meta.innerHTML = '<h4></h4><code></code><p></p>';
+      meta.querySelector('h4').textContent = it.name; meta.querySelector('code').textContent = it.tag; meta.querySelector('p').textContent = it.desc;
+      card.append(stage, meta); grid.appendChild(card);
+      views.push({ el: stage, item: it, scene: null, root: null, obj: null, rx: .3, ry: -.4, drag: null, last: -1e9 });
+    }
+    pe.appendChild(el);
+  }
+  main.appendChild(pe);
+}
+
+function buildScene(v) {
+  const scene = new THREE.Scene(); scene.background = BG; scene.environment = ENV;
+  const d = new THREE.DirectionalLight(0xffffff, 1.7); d.position.copy(L).multiplyScalar(10); scene.add(d);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x2a2a30, .3));
+  if (v.item.backdrop) { const p = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.6), new THREE.MeshBasicMaterial({ map: CHECK, toneMapped: false })); p.position.z = -1.7; scene.add(p); }
+  const root = new THREE.Group(); const obj = v.item.make(); root.add(obj); scene.add(root);
+  v.scene = scene; v.root = root; v.obj = obj;
+}
+
+for (const v of views) {
+  const el = v.el;
+  el.addEventListener('pointerdown', (e) => { v.drag = { x: e.clientX, y: e.clientY, id: e.pointerId }; try { el.setPointerCapture(e.pointerId); } catch (_) {} });
+  el.addEventListener('pointermove', (e) => { if (!v.drag || v.drag.id !== e.pointerId) return;
+    v.ry += (e.clientX - v.drag.x) * .012; v.rx = Math.max(-1.5, Math.min(1.5, v.rx + (e.clientY - v.drag.y) * .012));
+    v.drag.x = e.clientX; v.drag.y = e.clientY; v.last = performance.now(); });
+  const end = () => { v.drag = null; v.last = performance.now(); };
+  el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+  el.addEventListener('keydown', (e) => { const k = { ArrowLeft: [0, -.2], ArrowRight: [0, .2], ArrowUp: [-.2, 0], ArrowDown: [.2, 0] }[e.key];
+    if (k) { e.preventDefault(); v.rx = Math.max(-1.5, Math.min(1.5, v.rx + k[0])); v.ry += k[1]; v.last = performance.now(); } });
+}
+
+let prev = performance.now(); const t0 = prev;
+function frame(now) {
+  const dt = Math.min(.05, (now - prev) / 1000); prev = now;
+  const t = (now - t0) / 1000; U.uTime.value = t;
+  const W = canvas.clientWidth, Hh = canvas.clientHeight;
+  if (canvas.width !== Math.floor(W * DPR) || canvas.height !== Math.floor(Hh * DPR)) renderer.setSize(W, Hh, false);
+  renderer.setScissorTest(false); renderer.clear(); renderer.setScissorTest(true);
+  let built = 0;
+  for (const v of views) {
+    const r = v.el.getBoundingClientRect();
+    if (r.bottom < -40 || r.top > Hh + 40 || r.right < 0 || r.left > W || r.width < 2) continue;
+    if (!v.scene) { if (built > 1) continue; buildScene(v); built++; }
+    if (!v.drag && !REDUCED && now - v.last > 1600) v.ry += dt * .3;
+    v.root.rotation.set(v.rx, v.ry, 0);
+    if (v.obj.userData.update) v.obj.userData.update(t, dt, r, v.root);
+    renderer.setViewport(r.left, Hh - r.bottom, r.width, r.height);
+    renderer.setScissor(r.left, Hh - r.bottom, r.width, r.height);
+    renderer.render(v.scene, camera);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+
+<script src="../../assets/js/series.js" data-catalogue="furfluid"></script>

@@ -1,0 +1,7 @@
+/* Series navigation (used by every catalogue page, including the older standalone ones) */
+.series { color: #9da2ac; font-size: 13px; margin-top: 14px; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+.series a { color: #f0a54a; }
+.series b { color: #ece8e0; font-weight: 500; }
+.series span[aria-current] { color: #ece8e0; }
+.series .series-home { color: #ece8e0; text-decoration: none; border: 1px solid #2c3038; border-radius: 999px; padding: 2px 11px; margin-right: 4px; }
+.series .series-home:hover, .series .series-home:focus-visible { border-color: #f0a54a; color: #f0a54a; outline: none; }

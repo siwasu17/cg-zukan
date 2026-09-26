@@ -1,0 +1,38 @@
+/* List page */
+header.top h1 { font-size: clamp(38px, 7vw, 76px); }
+.stats { margin: 16px 0 0; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; color: var(--muted); letter-spacing: .04em; }
+.stats b { color: var(--ink); font-weight: 500; }
+
+.group { margin-top: 64px; scroll-margin-top: 20px; }
+.group > header { display: grid; gap: 6px; margin-bottom: 20px; }
+.group h2 { font-size: clamp(22px, 3vw, 28px); line-height: 1.3; margin: 0; font-weight: 700; }
+.group > header p { margin: 0; color: var(--muted); max-width: 46em; font-size: 14.5px; }
+
+.books { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
+.book {
+  display: flex; flex-direction: column; min-width: 0; text-decoration: none; color: inherit;
+  background: var(--panel); border: 1px solid var(--line); transition: border-color .15s, transform .15s;
+}
+.book:hover, .book:focus-visible { border-color: var(--accent); outline: none; transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) { .book { transition: none; } .book:hover { transform: none; } }
+
+.cover { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-bottom: 1px solid var(--line); background: #0b0e1a; }
+.cover img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.cover .tile {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background:
+    radial-gradient(120% 90% at 20% 10%, hsl(var(--h) 60% 34% / .9), transparent 60%),
+    radial-gradient(90% 80% at 90% 100%, hsl(calc(var(--h) + 40) 70% 40% / .6), transparent 60%),
+    #11131a;
+}
+.cover .tile span { font-family: "Dela Gothic One", "Zen Kaku Gothic New", sans-serif; font-size: clamp(64px, 9vw, 96px); color: rgba(255,255,255,.88); line-height: 1; }
+.badges { position: absolute; left: 10px; top: 10px; display: flex; gap: 6px; }
+.badge { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; padding: 2px 8px; border-radius: 999px; background: rgba(11,14,26,.78); color: var(--ink); border: 1px solid rgba(255,255,255,.12); }
+.badge.kind { color: var(--accent); }
+
+.book .body { padding: 14px 16px 18px; display: grid; gap: 6px; }
+.book h3 { margin: 0; font-size: 18px; line-height: 1.4; font-weight: 700; }
+.book p { margin: 0; font-size: 13.5px; color: var(--muted); line-height: 1.7; }
+.book .more { margin-top: 4px; font-size: 12.5px; color: var(--accent); }
+
+@media (max-width: 560px) { .books { grid-template-columns: 1fr; } }

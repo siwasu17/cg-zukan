@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ライティング図鑑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../assets/css/base.css">
+<link rel="stylesheet" href="../../assets/css/series.css">
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="wrap">
+<header class="top">
+<div class="eyebrow">Lighting catalogue</div>
+<h1>ライティング図鑑</h1>
+<p class="lead">最初の球体マテリアル図鑑では照明を固定して、材質の違いだけを見ました。今回はその逆で、物体と材質はそのままに、光の当て方だけを変えています。光源の種類、影のつけ方、光の性質、そして写真や映画で使われる照明の組み方まで、同じ小さな舞台で見比べられます。</p>
+<p class="note">ドラッグ（またはフォーカスして矢印キー）で舞台を回せます。光は回らないので、光の向きとの関係がよく分かります。</p>
+<dl class="gloss">
+  <div><dt>光源</dt><dd>光を出すもの。太陽のように遠くから平行に届く光、電球のように1点から広がる光などがある。</dd></div>
+  <div><dt>シャドウマップ</dt><dd>光の位置から見た「一番手前にあるものまでの距離」を画像として記録し、それより奥なら影、として影を描く方法。</dd></div>
+  <div><dt>間接光</dt><dd>壁や床で一度はね返ってから届く光。現実の部屋の明るさの多くはこれで、計算がとても重い。</dd></div>
+</dl>
+<div class="series" id="series"></div>
+<nav id="nav" aria-label="カテゴリ"></nav>
+</header>
+<main id="main"></main>
+<footer>three.js r149 でリアルタイムに描画しています。</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script src="../../assets/js/g3d.js"></script>
+<script src="../../assets/js/series.js" data-catalogue="lighting"></script>
+<script src="main.js"></script>
+</body>
+</html>

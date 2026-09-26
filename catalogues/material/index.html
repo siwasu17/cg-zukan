@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body { margin: 0; } [hidden] { display: none !important; }</style>
+<link rel="stylesheet" href="../../assets/css/series.css">
+<title>球体マテリアル図鑑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #15171b;
+    --panel: #1b1e23;
+    --line: #2c3038;
+    --ink: #ece8e0;
+    --muted: #9da2ac;
+    --accent: #f0a54a;
+    --stage: #22252a;
+  }
+  html, body { background: var(--bg); color: var(--ink); }
+  body {
+    font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+    font-size: 15px; line-height: 1.75;
+  }
+  #gl { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; display: block; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding-inline: 20px; padding-block: 44px 96px; }
+
+  header h1 {
+    font-family: "Dela Gothic One", "Zen Kaku Gothic New", sans-serif; font-weight: 400;
+    font-size: clamp(34px, 6.4vw, 66px); line-height: 1.15; margin: 0 0 18px; letter-spacing: .01em;
+    text-wrap: balance;
+  }
+  .eyebrow { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  .lead { max-width: 42em; color: var(--ink); font-size: 16px; margin: 0; }
+  .note { max-width: 42em; color: var(--muted); font-size: 13.5px; margin: 10px 0 0; }
+
+  .gloss { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 28px 0 0; }
+  .gloss div { border-top: 1px solid var(--line); padding-top: 12px; }
+  .gloss dt { font-weight: 700; font-size: 15px; }
+  .gloss dt span { font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 400; font-size: 11.5px; color: var(--muted); margin-left: 8px; letter-spacing: .04em; }
+  .gloss dd { margin: 4px 0 0; color: var(--muted); font-size: 13.5px; }
+
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 30px; }
+  nav a {
+    color: var(--ink); text-decoration: none; font-size: 13.5px;
+    border: 1px solid var(--line); padding: 5px 13px; border-radius: 999px; background: var(--panel);
+  }
+  nav a:hover, nav a:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+
+  section { margin-top: 72px; scroll-margin-top: 20px; }
+  section > header { display: grid; gap: 6px; margin-bottom: 22px; }
+  section h2 { font-size: clamp(22px, 3vw, 28px); line-height: 1.3; margin: 0; font-weight: 700; text-wrap: balance; }
+  section > header p { margin: 0; color: var(--muted); max-width: 46em; font-size: 14.5px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
+  .stage {
+    aspect-ratio: 1; width: 100%; max-width: 100%; background: var(--stage);
+    cursor: grab; touch-action: pan-y; border-bottom: 1px solid var(--line); outline: none;
+  }
+  .stage:active { cursor: grabbing; }
+  .stage:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+  .meta { padding: 12px 14px 16px; display: grid; gap: 4px; }
+  .meta h3 { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.4; }
+  .meta code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11.5px; color: var(--accent); overflow-wrap: anywhere; }
+  .meta p { margin: 2px 0 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+  footer { margin-top: 80px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; }
+  .fail { padding: 16px; border: 1px solid var(--accent); color: var(--ink); margin-top: 24px; }
+
+  @media (max-width: 560px) {
+    .wrap { padding-inline: 16px; }
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .meta { padding: 10px 10px 12px; }
+    .meta h3 { font-size: 14.5px; }
+    .meta p { font-size: 12.5px; }
+  }
+</style>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Shader ball catalogue</div>
+    <h1>球体マテリアル図鑑</h1>
+    <p class="lead">ここに並んでいるのは、すべて同じ「球」です。形は変えず、表面の見た目を決める設定だけを変えています。それぞれの球はドラッグ（またはフォーカスして矢印キー）で回せます。</p>
+    <p class="note">照明は全カード共通です（左上からの光が1つと、映り込み用に周囲の部屋を用意）。違いはすべてマテリアル側から来ています。</p>
+    <dl class="gloss">
+      <div><dt>マテリアル<span>material</span></dt><dd>物体の「材質の設定」。色、つや、金属かどうか、透明度などの数値をまとめたもの。</dd></div>
+      <div><dt>テクスチャ<span>texture</span></dt><dd>表面に巻きつける画像。色だけでなく、凹凸やつやの強さ、透明度の情報を入れることもある。</dd></div>
+      <div><dt>シェーダー<span>shader</span></dt><dd>画面の1点1点の色を計算する小さなプログラム。GPUが全画素に対して同時に実行する。マテリアルの中身はシェーダーでできている。</dd></div>
+    </dl>
+    <nav id="nav" aria-label="カテゴリ"></nav>
+  <div class="series" id="series"></div>
+</header>
+  <main id="main"></main>
+  <footer>three.js r149 と自作の GLSL シェーダーでリアルタイムに描画しています。テクスチャ画像もすべてページ内でプログラムから生成しています。</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script>
+(function () {
+'use strict';
+
+/* ---------------- content ---------------- */
+const SECTIONS = [
+  { id: 'shading', en: 'Shading models', title: 'シェーディングモデル',
+    lead: '光が当たったとき、面の明るさをどう計算するか。3DCGの一番根っこの部分です。同じ青い球でも、計算方法だけでここまで印象が変わります。' },
+  { id: 'pbr', en: 'Physically based rendering', title: '物理ベースマテリアル（PBR）',
+    lead: '「金属かどうか」「表面の粗さ」など、現実の物理に沿った数値で素材を決める方式。今のゲームや映画の標準です。プログラムは同じで、数値を変えるだけで別の素材になります。' },
+  { id: 'texture', en: 'Texture mapping', title: 'テクスチャマッピング',
+    lead: '画像を球に巻きつけて、場所ごとに見た目を変える方法。画像は色だけでなく、凹凸・つや・透明度・発光といった「色以外の情報」の入れ物としても使われます。' },
+  { id: 'procedural', en: 'Procedural patterns', title: 'プロシージャル（計算で模様を作る）',
+    lead: '画像を使わず、シェーダーの中で数式から模様を生み出す方法。いくら拡大してもぼやけず、時間で動かすこともできます。' },
+  { id: 'vertex', en: 'Vertex shaders', title: '頂点シェーダー（形そのものを動かす）',
+    lead: '色ではなく、頂点の位置をシェーダーで動かす方法。データ上は球のままで、表示する瞬間にだけ形が変わります。' },
+  { id: 'npr', en: 'Non-photorealistic rendering', title: 'ノンフォトリアル（NPR・スタイライズ）',
+    lead: '写実ではなく、アニメ、ペン画、印刷物、レトロゲームのような絵づくりを目指す技法です。' },
+  { id: 'fx', en: 'Effects', title: 'エフェクト系',
+    lead: '透け・発光・消滅など、ゲームやSF映像の演出でよく見る表現です。' }
+];
+
+/* ---------------- three setup ---------------- */
+const main = document.getElementById('main');
+const nav = document.getElementById('nav');
+for (const s of SECTIONS) {
+  const a = document.createElement('a'); a.href = '#' + s.id; a.textContent = s.title; nav.appendChild(a);
+}
+if (typeof THREE === 'undefined') { fail('3D描画ライブラリを読み込めませんでした。ページを再読み込みしてください。'); return; }
+
+const canvas = document.getElementById('gl');
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+} catch (e) { fail('このブラウザでは WebGL が使えないため、球を描画できません。'); return; }
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+renderer.setPixelRatio(DPR);
+renderer.setClearColor(0x000000, 0);
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.autoClear = true;
+
+function fail(msg) { const d = document.createElement('div'); d.className = 'fail'; d.textContent = msg; main.prepend(d); }
+
+const L = new THREE.Vector3(-2, 3, 4).normalize();
+const U = { uTime: { value: 0 }, uL: { value: L }, uDpr: { value: DPR } };
+const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+camera.position.set(0, 0, 4.25);
+
+/* seeded random */
+function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+function ctex(w, h, draw, srgb = true) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  if (srgb) t.encoding = THREE.sRGBEncoding;
+  t.anisotropy = 8;
+  return t;
+}
+
+/* environment: a simple studio room baked into a reflection map */
+function makeEnv() {
+  const room = new THREE.Scene();
+  const box = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10), new THREE.MeshBasicMaterial({ color: 0x4a4d54, side: THREE.BackSide }));
+  room.add(box);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshBasicMaterial({ color: 0x1c1d21 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -4.9; room.add(floor);
+  const panel = (w, h, rgb, pos, look) => {
+    const m = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }); m.color.setRGB(...rgb);
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m); p.position.set(...pos); p.lookAt(...look); room.add(p);
+  };
+  panel(5, 3, [7, 7, 7], [0, 4.8, 0.5], [0, 0, 0]);
+  panel(1.2, 6, [3.5, 3.8, 4.5], [-4.8, 0.5, 1.5], [0, 0, 0]);
+  panel(2, 2, [5, 3.6, 2.4], [4.8, 1, -1.5], [0, 0, 0]);
+  panel(3, 1, [2, 2, 2.2], [0, 1, -4.8], [0, 0, 0]);
+  const pm = new THREE.PMREMGenerator(renderer);
+  const rt = pm.fromScene(room, 0.04);
+  pm.dispose();
+  return rt.texture;
+}
+const ENV = makeEnv();
+
+const BG = ctex(256, 256, (g, w, h) => {
+  const gr = g.createRadialGradient(w * .5, h * .42, 0, w * .5, h * .5, w * .75);
+  gr.addColorStop(0, '#3a3e46'); gr.addColorStop(1, '#1d1f24');
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+});
+
+const CHECK = ctex(512, 512, (g, w, h) => {
+  const n = 8, s = w / n;
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { g.fillStyle = (x + y) % 2 ? '#2f333b' : '#d9d3c4'; g.fillRect(x * s, y * s, s, s); }
+});
+
+/* ---------- procedural helpers (JS) for baked textures ---------- */
+function h3(x, y, z) { let n = Math.imul(x, 374761393) ^ Math.imul(y, 668265263) ^ Math.imul(z, 1440662683); n = Math.imul(n ^ (n >>> 13), 1274126177); n ^= n >>> 16; return (n >>> 0) / 4294967296; }
+function vnoise(x, y, z) {
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  const xf = x - xi, yf = y - yi, zf = z - zi;
+  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf), w = zf * zf * (3 - 2 * zf);
+  const l = (a, b, t) => a + (b - a) * t;
+  return l(
+    l(l(h3(xi, yi, zi), h3(xi + 1, yi, zi), u), l(h3(xi, yi + 1, zi), h3(xi + 1, yi + 1, zi), u), v),
+    l(l(h3(xi, yi, zi + 1), h3(xi + 1, yi, zi + 1), u), l(h3(xi, yi + 1, zi + 1), h3(xi + 1, yi + 1, zi + 1), u), v), w);
+}
+function fbm3(x, y, z) { let s = 0, a = .5; for (let i = 0; i < 6; i++) { s += a * vnoise(x, y, z); x *= 2.03; y *= 2.03; z *= 2.03; a *= .5; } return s / 0.984; }
+/* direction on the sphere for a pixel of an equirectangular texture (matches THREE.SphereGeometry UVs) */
+function dirOf(i, j, W, H) {
+  const phi = (i + .5) / W * Math.PI * 2, th = (j + .5) / H * Math.PI;
+  return [-Math.cos(phi) * Math.sin(th), Math.cos(th), Math.sin(phi) * Math.sin(th)];
+}
+function eachPixel(W, H, fn) { const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); const img = g.createImageData(W, H); for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) { const o = (j * W + i) * 4; const [r, gg, b] = fn(i, j); img.data[o] = r; img.data[o + 1] = gg; img.data[o + 2] = b; img.data[o + 3] = 255; } g.putImageData(img, 0, 0); return c; }
+function texOf(c, srgb) { const t = new THREE.CanvasTexture(c); if (srgb) t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; }
+const mix = (a, b, t) => a + (b - a) * t;
+const mix3 = (a, b, t) => [mix(a[0], b[0], t), mix(a[1], b[1], t), mix(a[2], b[2], t)];
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+
+/* lazily-built textures */
+const lazy = (f) => { let v; return () => v || (v = f()); };
+
+const earthTex = lazy(() => {
+  const W = 1024, H = 512; const field = new Float32Array(W * H);
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) { const [x, y, z] = dirOf(i, j, W, H); field[j * W + i] = fbm3(x * 1.8 + 7.3, y * 1.8 + 1.1, z * 1.8 - 3.7); }
+  const sea = 0.52;
+  const col = eachPixel(W, H, (i, j) => {
+    const n = field[j * W + i]; const [, y] = dirOf(i, j, W, H);
+    let c;
+    if (n < sea) c = mix3([43, 111, 176], [10, 36, 78], clamp01((sea - n) / 0.14));
+    else { const e = clamp01((n - sea) / 0.16); c = e < .55 ? mix3([72, 128, 58], [150, 136, 84], e / .55) : mix3([150, 136, 84], [214, 206, 190], (e - .55) / .45); }
+    if (Math.abs(y) > 0.86 + (n - .5) * 0.25) c = [236, 241, 246];
+    return c;
+  });
+  const rough = eachPixel(W, H, (i, j) => { const n = field[j * W + i]; const [, y] = dirOf(i, j, W, H); let r = n < 0.52 ? 70 : 232; if (Math.abs(y) > 0.86 + (n - .5) * 0.25) r = 140; return [r, r, r]; });
+  return { map: texOf(col, true), rough: texOf(rough, false) };
+});
+
+/* golf-ball dimples: height map + normal map built from it */
+const dimpleTex = lazy(() => {
+  const N = 170, pts = [], ga = Math.PI * (3 - Math.sqrt(5));
+  for (let k = 0; k < N; k++) { const y = 1 - (k + .5) / N * 2, r = Math.sqrt(1 - y * y), a = k * ga; pts.push([Math.cos(a) * r, y, Math.sin(a) * r]); }
+  const W = 1024, H = 512, a0 = 0.125; const hmap = new Float32Array(W * H);
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+    const [x, y, z] = dirOf(i, j, W, H); let best = -1;
+    for (let k = 0; k < N; k++) { const p = pts[k]; const d = p[0] * x + p[1] * y + p[2] * z; if (d > best) best = d; }
+    const ang = Math.acos(Math.min(1, best)); const t = ang / a0;
+    hmap[j * W + i] = t < 1 ? t * t : 1;
+  }
+  const height = eachPixel(W, H, (i, j) => { const v = hmap[j * W + i] * 255; return [v, v, v]; });
+  const k = 0.035;
+  const normal = eachPixel(W, H, (i, j) => {
+    const th = (j + .5) / H * Math.PI; const du = 2 * Math.PI / W * Math.max(Math.sin(th), 0.08), dv = Math.PI / H;
+    const hl = hmap[j * W + (i - 1 + W) % W], hr = hmap[j * W + (i + 1) % W];
+    const hu = hmap[Math.max(0, j - 1) * W + i], hd = hmap[Math.min(H - 1, j + 1) * W + i];
+    let nx = -(hr - hl) / (2 * du) * k, ny = (hd - hu) / (2 * dv) * k, nz = 1;
+    const l = Math.hypot(nx, ny, nz); nx /= l; ny /= l; nz /= l;
+    return [(nx * .5 + .5) * 255, (ny * .5 + .5) * 255, (nz * .5 + .5) * 255];
+  });
+  return { height: texOf(height, false), normal: texOf(normal, false) };
+});
+
+const uvChecker = lazy(() => ctex(1024, 512, (g, w, h) => {
+  const nx = 16, ny = 8, s = w / nx;
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+    const light = (x + y) % 2 === 0;
+    g.fillStyle = light ? `hsl(${x / nx * 360}, 55%, 72%)` : '#23262c';
+    g.fillRect(x * s, y * s, s, s);
+    g.fillStyle = light ? '#1b1d22' : '#e8e3d8';
+    g.font = `600 ${s * .34}px "JetBrains Mono", monospace`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(String.fromCharCode(65 + y) + (x + 1), x * s + s / 2, y * s + s / 2);
+  }
+}));
+
+const roughChecker = lazy(() => ctex(512, 256, (g, w, h) => {
+  const nx = 8, ny = 4, s = w / nx;
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) { const v = (x + y) % 2 ? 235 : 22; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(x * s, y * s, s, s); }
+}, false));
+
+const holesTex = lazy(() => ctex(1024, 512, (g, w, h) => {
+  g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.fillStyle = '#000';
+  const nx = 20, ny = 10, s = w / nx;
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) { g.beginPath(); g.arc(x * s + s / 2, y * s + s / 2, s * .33, 0, Math.PI * 2); g.fill(); }
+}, false));
+
+const circuitTex = lazy(() => ctex(1024, 512, (g, w, h) => {
+  g.fillStyle = '#000'; g.fillRect(0, 0, w, h);
+  const r = rng(7), step = 16; const dirs = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  for (let k = 0; k < 90; k++) {
+    let x = Math.floor(r() * w / step) * step, y = Math.floor(r() * h / step) * step;
+    let d = Math.floor(r() * 4) * 2; const col = r() < .75 ? '#39e6ff' : '#ff4fa3';
+    g.strokeStyle = col; g.fillStyle = col; g.lineWidth = r() < .3 ? 4 : 2.5;
+    g.beginPath(); g.moveTo(x, y); g.arc(x, y, 4, 0, Math.PI * 2); g.fill(); g.beginPath(); g.moveTo(x, y);
+    const len = 4 + Math.floor(r() * 14);
+    for (let s = 0; s < len; s++) { if (r() < .25) d = (d + (r() < .5 ? 1 : 7)) % 8; x += dirs[d][0] * step; y += dirs[d][1] * step; g.lineTo(x, y); }
+    g.stroke(); g.beginPath(); g.arc(x, y, 5, 0, Math.PI * 2); g.lineWidth = 2; g.stroke();
+  }
+}));
+
+const matcapTex = lazy(() => ctex(256, 256, (g, w, h) => {
+  const c = w / 2;
+  let gr = g.createRadialGradient(w * .38, h * .34, 4, c, c, c);
+  gr.addColorStop(0, '#fff6f2'); gr.addColorStop(.35, '#f2b7c6'); gr.addColorStop(.75, '#8e4c9a'); gr.addColorStop(1, '#2e1846');
+  g.fillStyle = gr; g.beginPath(); g.arc(c, c, c, 0, Math.PI * 2); g.fill();
+  gr = g.createRadialGradient(c, c, c * .72, c, c, c);
+  gr.addColorStop(0, 'rgba(120,220,255,0)'); gr.addColorStop(.85, 'rgba(120,220,255,.55)'); gr.addColorStop(1, 'rgba(200,245,255,.9)');
+  g.fillStyle = gr; g.beginPath(); g.arc(c, c, c, 0, Math.PI * 2); g.fill();
+  gr = g.createRadialGradient(w * .33, h * .28, 0, w * .33, h * .28, w * .11);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+}));
+
+const toonRamp = (steps) => { const d = new Uint8Array(steps); for (let i = 0; i < steps; i++) d[i] = Math.round(40 + (215 * i) / (steps - 1)); const t = new THREE.DataTexture(d, steps, 1, THREE.RedFormat); t.minFilter = t.magFilter = THREE.NearestFilter; t.generateMipmaps = false; t.needsUpdate = true; return t; };
+
+/* ---------------- GLSL chunks ---------------- */
+const NOISE = `
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+float snoise(vec3 v){
+  const vec2 C=vec2(1.0/6.0,1.0/3.0); const vec4 D=vec4(0.0,0.5,1.0,2.0);
+  vec3 i=floor(v+dot(v,C.yyy)); vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g; vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy;
+  i=mod289(i);
+  vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+  float n_=0.142857142857; vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.0*floor(p*ns.z*ns.z); vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);
+  vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy; vec4 h=1.0-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0; vec4 sh=-step(h,vec4(0.0));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;
+  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0); m=m*m;
+  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}
+float fbm(vec3 p){ float a=0.5, s=0.0; for(int i=0;i<5;i++){ s+=a*snoise(p); p*=2.02; a*=0.5; } return s; }
+`;
+const VOR = `
+vec3 hash3(vec3 p){ p=vec3(dot(p,vec3(127.1,311.7,74.7)),dot(p,vec3(269.5,183.3,246.1)),dot(p,vec3(113.5,271.9,124.6))); return fract(sin(p)*43758.5453); }
+vec3 vor(vec3 x){
+  vec3 i=floor(x), f=fract(x); float d1=9.0, d2=9.0; vec3 id=vec3(0.0);
+  for(int k=-1;k<=1;k++) for(int j=-1;j<=1;j++) for(int m=-1;m<=1;m++){
+    vec3 g=vec3(float(m),float(j),float(k)); vec3 r=g+hash3(i+g)-f; float d=dot(r,r);
+    if(d<d1){ d2=d1; d1=d; id=i+g; } else if(d<d2){ d2=d; }
+  }
+  return vec3(sqrt(d1), sqrt(d2), hash3(id).x);
+}
+`;
+const VARY = `varying vec3 vN; varying vec3 vP; varying vec3 vW; varying vec2 vUv; varying float vD;`;
+const VERT = `${VARY}
+void main(){ vUv=uv; vP=position; vD=0.0; vec4 w=modelMatrix*vec4(position,1.0); vW=w.xyz; vN=normalize(mat3(modelMatrix)*normal); gl_Position=projectionMatrix*viewMatrix*w; }`;
+const HEAD = `uniform float uTime; uniform vec3 uL; uniform float uDpr;
+${VARY}
+vec3 viewDir(){ return normalize(cameraPosition-vW); }
+vec3 shade(vec3 a, vec3 n, float spec, float gloss){
+  float d=max(dot(n,uL),0.0); vec3 h=normalize(uL+viewDir());
+  return a*(0.2+0.9*d)+vec3(pow(max(dot(n,h),0.0),gloss)*spec);
+}
+`;
+function dispVert(fn, chunks) {
+  return `uniform float uTime;
+${VARY}
+${chunks}
+${fn}
+vec3 dp(vec3 d){ return d*(1.0+disp(d)); }
+void main(){
+  vUv=uv; vec3 d=normalize(position);
+  vec3 up=abs(d.y)<0.99?vec3(0.0,1.0,0.0):vec3(1.0,0.0,0.0);
+  vec3 t=normalize(cross(up,d)); vec3 b=cross(d,t); float e=0.004;
+  vec3 p=dp(d);
+  vec3 n=normalize(cross(dp(normalize(d+t*e))-p, dp(normalize(d+b*e))-p));
+  if(dot(n,d)<0.0) n=-n;
+  vD=disp(d); vP=p; vec4 w=modelMatrix*vec4(p,1.0); vW=w.xyz; vN=normalize(mat3(modelMatrix)*n);
+  gl_Position=projectionMatrix*viewMatrix*w;
+}`;
+}
+function shader(frag, o = {}) {
+  return new THREE.ShaderMaterial({
+    uniforms: U,
+    vertexShader: o.vert || VERT,
+    fragmentShader: HEAD + (o.chunks || '') + frag,
+    transparent: !!o.transparent,
+    depthWrite: o.depthWrite !== undefined ? o.depthWrite : true,
+    blending: o.additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+    side: o.side || THREE.FrontSide
+  });
+}
+
+/* ---------------- geometry & material shortcuts ---------------- */
+const SPH = new THREE.SphereGeometry(1, 128, 96);
+const SPH_HI = new THREE.SphereGeometry(1, 320, 200);
+const mesh = (mat, geo = SPH) => new THREE.Mesh(geo, mat);
+const std = (o) => new THREE.MeshStandardMaterial(o);
+const phys = (o) => new THREE.MeshPhysicalMaterial(o);
+const BLUE = 0x4f7fe0;
+
+/* ---------------- the catalogue ---------------- */
+const ITEMS = [
+  // shading
+  { s: 'shading', name: '単色（アンリット）', tag: 'MeshBasicMaterial',
+    desc: '光を一切計算せず、全部の面を同じ色で塗ります。陰影がないので丸い円盤にしか見えません。立体感は陰影から生まれる、ということがよく分かる例です。',
+    make: () => mesh(new THREE.MeshBasicMaterial({ color: BLUE })) },
+  { s: 'shading', name: 'ランバート', tag: 'MeshLambertMaterial',
+    desc: '光の向きと面の向きだけで明るさを決める、最も基本的な陰影。つやのない紙や素焼きのような見た目になります。',
+    make: () => mesh(new THREE.MeshLambertMaterial({ color: BLUE })) },
+  { s: 'shading', name: 'フォン', tag: 'MeshPhongMaterial · shininess',
+    desc: 'ランバートに「ハイライト（光の点）」を足したもの。2000年代のゲームによくある、つるっとしたプラスチック感です。',
+    make: () => mesh(new THREE.MeshPhongMaterial({ color: BLUE, specular: 0x777777, shininess: 70 })) },
+  { s: 'shading', name: 'フラットシェーディング', tag: 'flatShading: true',
+    desc: '三角形の面ごとに一色で塗ります。ポリゴンの角がそのまま見えるので、ローポリのイラスト風の表現になります。',
+    make: () => mesh(std({ color: BLUE, roughness: .55, flatShading: true }), new THREE.IcosahedronGeometry(1, 1)) },
+  { s: 'shading', name: 'トゥーン', tag: 'MeshToonMaterial · gradientMap',
+    desc: '明るさを3段階に区切って塗ります。アニメのセル画のような、境目のくっきりした影になります。',
+    make: () => mesh(new THREE.MeshToonMaterial({ color: BLUE, gradientMap: toonRamp(3) })) },
+  { s: 'shading', name: '法線の可視化', tag: 'MeshNormalMaterial',
+    desc: '各点で面がどちらを向いているか（法線）を色に置き換えたもの。カメラから見た向きで色を決めるので、回しても色は動きません。見た目用というより確認用です。',
+    make: () => mesh(new THREE.MeshNormalMaterial()) },
+  { s: 'shading', name: 'マットキャップ', tag: 'MeshMatcapMaterial',
+    desc: '「光の当たった球の絵」を1枚用意し、面の向きに応じてその絵から色を拾います。照明の計算がいらず、とても軽いのに凝った質感が出せます。',
+    make: () => mesh(new THREE.MeshMatcapMaterial({ matcap: matcapTex() })) },
+
+  // pbr
+  { s: 'pbr', name: 'プラスチック', tag: 'metalness 0 · roughness 0.35',
+    desc: '金属ではない素材は、表面の色の上に白っぽい反射が乗ります。粗さが中くらいなので、映り込みは少しぼやけます。',
+    make: () => mesh(std({ color: 0xd23c3c, metalness: 0, roughness: .35 })) },
+  { s: 'pbr', name: 'ゴム・マット', tag: 'metalness 0 · roughness 1.0',
+    desc: '粗さを最大にすると反射がまんべんなく散らばり、ハイライトが消えます。ゴムや布、粘土の質感です。',
+    make: () => mesh(std({ color: 0x6b7a3a, metalness: 0, roughness: 1 })) },
+  { s: 'pbr', name: 'クローム', tag: 'metalness 1 · roughness 0.05',
+    desc: '金属で粗さがほぼゼロ。周りの部屋がそのまま映り込み、鏡の球になります。金属の見た目は「映り込み」だけでできています。',
+    make: () => mesh(std({ color: 0xffffff, metalness: 1, roughness: .05 })) },
+  { s: 'pbr', name: 'つや消し金属', tag: 'metalness 1 · roughness 0.45',
+    desc: 'クロームと同じ金属のまま、粗さだけを上げたもの。映り込みがぼけて、アルミの削り出しのような鈍い光り方になります。',
+    make: () => mesh(std({ color: 0xc9ccd1, metalness: 1, roughness: .45 })) },
+  { s: 'pbr', name: '金', tag: 'metalness 1 · color #ffc356',
+    desc: '金属の場合、設定した「色」は反射の色になります。黄色い映り込みを持つ金属、それが金です。',
+    make: () => mesh(std({ color: 0xffc356, metalness: 1, roughness: .22 })) },
+  { s: 'pbr', name: '銅', tag: 'metalness 1 · color #e0895c',
+    desc: '色と粗さを変えただけで、金とは別の金属になります。同じ設計図から素材を作り分けられるのがPBRの利点です。',
+    make: () => mesh(std({ color: 0xe0895c, metalness: 1, roughness: .32 })) },
+  { s: 'pbr', name: 'カーペイント', tag: 'MeshPhysicalMaterial · clearcoat',
+    desc: '下地はやや粗い塗装、その上に透明なコーティングをもう一層。ぼんやりした色の上に、鋭いハイライトが重なる2層構造です。',
+    make: () => mesh(phys({ color: 0x8a0f1f, metalness: .55, roughness: .6, clearcoat: 1, clearcoatRoughness: .03 })) },
+  { s: 'pbr', name: 'ベルベット', tag: 'sheen',
+    desc: '布の細かい毛羽立ちを表す設定。視線と面が平行になる輪郭付近が、ふわっと明るくなります。',
+    make: () => mesh(phys({ color: 0x4a0f36, roughness: 1, sheen: 1, sheenColor: new THREE.Color(0xff8fcf), sheenRoughness: .45 })) },
+  { s: 'pbr', name: 'ガラス', tag: 'transmission · ior 1.5',
+    desc: '光を通し、屈折させる素材。後ろの市松模様が曲がり、上下左右が逆さまに見えます（ガラス玉をのぞいたときと同じ）。',
+    backdrop: true,
+    make: () => mesh(phys({ color: 0xffffff, metalness: 0, roughness: 0, transmission: 1, ior: 1.5, thickness: 1.8 })) },
+  { s: 'pbr', name: 'すりガラス', tag: 'transmission · roughness 0.35',
+    desc: 'ガラスの粗さを上げると、通り抜ける光もぼけます。模様が曇って見えるすりガラスになります。',
+    backdrop: true,
+    make: () => mesh(phys({ color: 0xdfeef0, metalness: 0, roughness: .35, transmission: 1, ior: 1.5, thickness: 1.8 })) },
+  { s: 'pbr', name: 'シャボン玉', tag: 'iridescence · transmission',
+    desc: 'ごく薄い膜の表と裏で反射した光どうしが干渉し、虹色が生まれます（薄膜干渉）。膜が薄いので後ろは歪みません。',
+    backdrop: true,
+    make: () => mesh(phys({ color: 0xffffff, metalness: 0, roughness: 0, transmission: 1, ior: 1.0, thickness: 0, iridescence: 1, iridescenceIOR: 1.33, iridescenceThicknessRange: [180, 620] })) },
+  { s: 'pbr', name: '玉虫色の金属', tag: 'iridescence · metalness 1',
+    desc: '薄膜干渉を金属に乗せたもの。見る角度で色が青から紫、緑へと変わります。焼けたチタンや甲虫の羽の色です。',
+    make: () => mesh(phys({ color: 0x9a9aa0, metalness: 1, roughness: .18, iridescence: 1, iridescenceIOR: 1.9, iridescenceThicknessRange: [250, 700] })) },
+
+  // texture
+  { s: 'texture', name: 'UVチェッカー', tag: 'map',
+    desc: '平らな画像を球に巻きつけたもの。北極・南極に近いほどマス目が縮みます。世界地図の歪みと同じ現象で、貼り方の確認によく使う模様です。',
+    make: () => mesh(std({ map: uvChecker(), roughness: .6 })) },
+  { s: 'texture', name: '地球', tag: 'map + roughnessMap',
+    desc: '色の画像に加えて、「海はつるつる、陸はざらざら」という粗さの画像も重ねています。光の反射が海の部分だけで光ることに注目。',
+    make: () => { const t = earthTex(); const m = mesh(std({ map: t.map, roughnessMap: t.rough, roughness: 1, metalness: 0 })); m.rotation.z = .41; return m; } },
+  { s: 'texture', name: 'ゴルフボール', tag: 'normalMap',
+    desc: '凹凸の「向き」だけを画像で与えて陰影をごまかす手法。形は完全な球のままなので、輪郭はつるっとしています。',
+    make: () => mesh(std({ color: 0xf4f4f0, roughness: .38, normalMap: dimpleTex().normal })) },
+  { s: 'texture', name: '同じ凹凸を本当に作る', tag: 'displacementMap',
+    desc: '同じ画像で頂点を実際に押し込んだもの。輪郭までデコボコになりますが、細かく凹ませるぶん頂点がたくさん必要で重くなります。',
+    make: () => { const t = dimpleTex(); return mesh(std({ color: 0xf4f4f0, roughness: .38, normalMap: t.normal, displacementMap: t.height, displacementScale: .07, displacementBias: -.07 }), SPH_HI); } },
+  { s: 'texture', name: 'ラフネスマップ', tag: 'roughnessMap',
+    desc: '市松模様で「磨き」と「つや消し」を切り替えています。色は全部同じ金属なのに、マスごとに質感が違って見えます。',
+    make: () => mesh(std({ color: 0xd8dbe0, metalness: 1, roughness: 1, roughnessMap: roughChecker() })) },
+  { s: 'texture', name: 'アルファマップ（穴あき）', tag: 'alphaMap + alphaTest',
+    desc: '画像の黒い部分を透明として切り抜きます。金網や木の葉っぱはたいていこの方法。内側は別のマテリアルで塗り分けています。',
+    make: () => { const g = new THREE.Group(); const a = holesTex();
+      g.add(mesh(std({ color: 0xf2b134, roughness: .45, alphaMap: a, alphaTest: .5, side: THREE.FrontSide })));
+      g.add(mesh(std({ color: 0x1f6f78, roughness: .8, alphaMap: a, alphaTest: .5, side: THREE.BackSide }))); return g; } },
+  { s: 'texture', name: '発光マップ', tag: 'emissiveMap',
+    desc: '画像の明るい部分だけが自分で光ります。光が当たらない裏側に回しても、回路の線は光ったままです。',
+    make: () => mesh(std({ color: 0x16181d, metalness: .6, roughness: .4, emissive: 0xffffff, emissiveMap: circuitTex(), emissiveIntensity: 1.6 })) },
+
+  // procedural
+  { s: 'procedural', name: '大理石', tag: 'noise + sin',
+    desc: 'ノイズ（なめらかな乱数）で縞模様をゆがめると大理石の筋になります。3D空間の位置から計算しているので、石の塊から削り出したように模様が途切れません。',
+    make: () => mesh(shader(`void main(){ vec3 n=normalize(vN);
+      float q=fbm(vP*1.6); float v=sin((vP.x*1.2+vP.y*2.0+vP.z*0.6)*3.0+q*7.0);
+      float vein=1.0-smoothstep(0.0,0.2,abs(v));
+      float fine=1.0-smoothstep(0.0,0.06,abs(sin((vP.y+vP.z)*9.0+fbm(vP*3.5)*6.0)));
+      vec3 base=mix(vec3(0.94,0.93,0.9),vec3(0.84,0.83,0.81),fbm(vP*4.0)*0.5+0.5);
+      vec3 a=mix(base,vec3(0.24,0.27,0.31),vein*0.85); a=mix(a,vec3(0.55,0.5,0.46),fine*0.3);
+      gl_FragColor=vec4(shade(a,n,0.55,70.0),1.0); }`, { chunks: NOISE })) },
+  { s: 'procedural', name: '木目', tag: 'rings + noise',
+    desc: '中心の軸からの距離で年輪を作り、ノイズで揺らしています。回すと、断面と板目の両方の模様が見えます。',
+    make: () => mesh(shader(`void main(){ vec3 n=normalize(vN); vec3 p=vP;
+      float w=fbm(p*vec3(1.8,0.5,1.8))*0.35;
+      float r=length(p.xz+vec2(0.35,0.2))*8.0+w*4.0+p.y*0.5;
+      float ring=fract(r); float band=smoothstep(0.0,0.2,ring)*(1.0-smoothstep(0.55,1.0,ring));
+      float grain=fbm(p*vec3(28.0,1.5,28.0))*0.5+0.5;
+      vec3 a=mix(vec3(0.46,0.27,0.13),vec3(0.83,0.62,0.4),band); a*=0.82+0.3*grain;
+      gl_FragColor=vec4(shade(a,n,0.15,30.0),1.0); }`, { chunks: NOISE })) },
+  { s: 'procedural', name: 'ボロノイ', tag: 'Voronoi / cellular',
+    desc: '空間にばらまいた点のうち、どれに一番近いかで領域を分けます。細胞、うろこ、ひび割れ、石畳など、多くの模様の元になります。',
+    make: () => mesh(shader(`void main(){ vec3 n=normalize(vN);
+      vec3 c=vor(vP*3.2); float edge=smoothstep(0.02,0.1,c.y-c.x);
+      vec3 col=mix(vec3(0.08,0.4,0.33),vec3(0.78,0.84,0.28),c.z);
+      col*=0.65+0.45*(1.0-c.x); col=mix(vec3(0.05,0.06,0.05),col,edge);
+      gl_FragColor=vec4(shade(col,n,0.45,50.0),1.0); }`, { chunks: VOR })) },
+  { s: 'procedural', name: '溶岩', tag: 'animated noise',
+    desc: 'ノイズを時間とともに流しながら、値がゼロ付近の細い部分だけを光らせています。ひびがゆっくり動き続けます。',
+    make: () => mesh(shader(`void main(){ vec3 nn=normalize(vN);
+      float n=fbm(vP*1.8+vec3(0.0,uTime*0.12,uTime*0.05));
+      float crack=1.0-smoothstep(0.0,0.1,abs(n));
+      float pulse=0.85+0.15*sin(uTime*2.0+vP.y*4.0);
+      vec3 rock=vec3(0.13,0.11,0.1)*(0.7+0.6*(fbm(vP*6.0)*0.5+0.5));
+      vec3 lit=shade(rock,nn,0.2,20.0);
+      vec3 hot=mix(vec3(0.9,0.18,0.02),vec3(1.0,0.86,0.35),crack*crack);
+      gl_FragColor=vec4(mix(lit,hot*pulse*1.2,crack),1.0); }`, { chunks: NOISE })) },
+  { s: 'procedural', name: '水玉（UV基準）', tag: 'fract(uv)',
+    desc: 'UV座標（画像を貼るときの座標）で水玉を並べると、極に近いほど潰れます。3D位置で計算した大理石と見比べると違いが分かります。',
+    make: () => mesh(shader(`void main(){ vec3 n=normalize(vN);
+      vec2 g=vUv*vec2(24.0,12.0); vec2 f=fract(g)-0.5; float d=length(f);
+      float dotm=1.0-smoothstep(0.26,0.29,d);
+      vec3 a=mix(vec3(0.97,0.82,0.28),vec3(0.86,0.2,0.3),dotm);
+      gl_FragColor=vec4(shade(a,n,0.35,40.0),1.0); }`)) },
+  { s: 'procedural', name: 'ロウ・肌（表面下散乱風）', tag: 'wrap lighting',
+    desc: '光が表面の少し内側まで入り込んで散る質感（サブサーフェス・スキャタリング）を、計算で真似たもの。影の境目がやわらかく赤みを帯びます。',
+    make: () => mesh(shader(`void main(){ vec3 n=normalize(vN); vec3 v=viewDir();
+      float ndl=dot(n,uL); float wrap=max((ndl+0.6)/1.6,0.0);
+      vec3 alb=vec3(0.96,0.83,0.68); vec3 col=alb*(0.16+0.86*wrap);
+      col+=vec3(0.6,0.12,0.04)*exp(-pow(ndl*2.6,2.0))*0.5;
+      col+=vec3(1.0,0.5,0.3)*pow(1.0-max(dot(n,v),0.0),3.0)*0.25*(0.3+wrap);
+      col+=vec3(pow(max(dot(n,normalize(uL+v)),0.0),30.0)*0.12);
+      gl_FragColor=vec4(col,1.0); }`)) },
+
+  // vertex
+  { s: 'vertex', name: 'ぷよぷよ', tag: 'vertex noise',
+    desc: 'ノイズの値に応じて各頂点を外や内に動かしています。ノイズを時間でずらすので、生き物のようにうごめきます。',
+    make: () => { const m = mesh(shader(`void main(){ vec3 n=normalize(vN);
+      vec3 a=mix(vec3(0.16,0.66,0.62),vec3(0.96,0.5,0.7),smoothstep(-0.12,0.18,vD));
+      gl_FragColor=vec4(shade(a,n,0.6,60.0),1.0); }`,
+      { vert: dispVert(`float disp(vec3 d){ return 0.16*snoise(d*1.5+vec3(0.0,0.0,uTime*0.5))+0.05*snoise(d*3.0+uTime*0.3); }`, NOISE) }), SPH_HI); m.scale.setScalar(.84); return m; } },
+  { s: 'vertex', name: '波紋', tag: 'vertex sin wave',
+    desc: '北極からの角度をsin関数に入れて、頂点を上下させています。波が表面を伝わっていくように見えます。',
+    make: () => { const m = mesh(shader(`void main(){ vec3 n=normalize(vN);
+      vec3 a=mix(vec3(0.1,0.3,0.7),vec3(0.55,0.85,1.0),smoothstep(-0.05,0.05,vD));
+      gl_FragColor=vec4(shade(a,n,0.7,80.0),1.0); }`,
+      { vert: dispVert(`float disp(vec3 d){ float a=acos(clamp(d.y,-1.0,1.0)); return 0.055*sin(a*14.0-uTime*3.0)*sin(a); }`, '') }), SPH_HI); m.scale.setScalar(.93); return m; } },
+  { s: 'vertex', name: 'ウニ', tag: 'vertex Voronoi',
+    desc: 'ボロノイの点の中心ほど頂点を大きく押し出し、トゲを作っています。表面の模様づくりと同じ計算を、形の変形にも使えます。',
+    make: () => { const m = mesh(shader(`void main(){ vec3 n=normalize(vN);
+      vec3 a=mix(vec3(0.2,0.08,0.3),vec3(1.0,0.55,0.62),smoothstep(0.0,0.4,vD));
+      gl_FragColor=vec4(shade(a,n,0.5,50.0),1.0); }`,
+      { vert: dispVert(`float disp(vec3 d){ vec3 c=vor(d*3.0); return 0.42*pow(1.0-smoothstep(0.0,0.5,c.x),2.5); }`, VOR) }), SPH_HI); m.scale.setScalar(.72); return m; } },
+
+  // npr
+  { s: 'npr', name: 'アウトライン付きトゥーン', tag: 'inverted hull',
+    desc: '少し大きくして裏返した球を黒で描き、フチ線にしています。アニメ調3Dゲームの定番テクニックです。',
+    make: () => { const g = new THREE.Group();
+      g.add(mesh(new THREE.MeshToonMaterial({ color: 0xff8a5c, gradientMap: toonRamp(3) })));
+      const o = mesh(new THREE.MeshBasicMaterial({ color: 0x141414, side: THREE.BackSide })); o.scale.setScalar(1.045); g.add(o); return g; } },
+  { s: 'npr', name: 'ハッチング', tag: 'screen-space lines',
+    desc: '暗いところほど斜線を重ねる、ペン画の陰影。線は画面に対して固定なので、回すと線の上を球が滑るように見えます。',
+    make: () => mesh(shader(`
+      float line(vec2 p, vec2 d, float sp, float w){ float f=abs(fract(dot(p,normalize(d))/sp)-0.5)*2.0; return 1.0-smoothstep(w,w+0.25,f); }
+      void main(){ vec3 n=normalize(vN);
+        float l=0.12+0.88*max(dot(n,uL),0.0); vec2 p=gl_FragCoord.xy/uDpr;
+        float ink=0.0;
+        ink=max(ink,line(p,vec2(1.0,1.0),6.0,0.22)*smoothstep(0.85,0.78,l));
+        ink=max(ink,line(p,vec2(1.0,-1.0),6.0,0.22)*smoothstep(0.6,0.53,l));
+        ink=max(ink,line(p,vec2(1.0,0.0),4.0,0.25)*smoothstep(0.38,0.31,l));
+        ink=max(ink,line(p,vec2(0.0,1.0),3.0,0.3)*smoothstep(0.2,0.14,l));
+        ink=max(ink,smoothstep(0.28,0.12,dot(n,viewDir())));
+        gl_FragColor=vec4(mix(vec3(0.95,0.92,0.85),vec3(0.13,0.12,0.11),ink),1.0); }`)) },
+  { s: 'npr', name: 'ハーフトーン', tag: 'screen-space dots',
+    desc: '暗さを点の大きさで表す、印刷物やアメコミの網点表現。明るい所は小さな点、暗い所は大きな点になります。',
+    make: () => mesh(shader(`void main(){ vec3 n=normalize(vN);
+      float l=0.08+0.92*max(dot(n,uL),0.0);
+      float cell=7.0*uDpr; vec2 p=mat2(0.7071,-0.7071,0.7071,0.7071)*gl_FragCoord.xy;
+      vec2 f=fract(p/cell)-0.5; float r=sqrt(1.0-l)*0.66; float d=length(f);
+      float dotm=1.0-smoothstep(r-0.06,r+0.04,d);
+      vec3 col=mix(vec3(0.98,0.85,0.3),vec3(0.86,0.16,0.36),dotm);
+      col=mix(col,vec3(0.1,0.08,0.1),smoothstep(0.22,0.1,dot(n,viewDir())));
+      gl_FragColor=vec4(col,1.0); }`)) },
+  { s: 'npr', name: 'ディザリング', tag: '4-color Bayer dither',
+    desc: '4色しか使えない制約のなかで、点の並べ方で中間の明るさを表現します。初期の携帯ゲーム機のような見た目です。',
+    make: () => mesh(shader(`
+      float b2(vec2 a){ a=floor(a); return fract(a.x/2.0+a.y*a.y*0.75); }
+      float b4(vec2 a){ return b2(0.5*a)*0.25+b2(a); }
+      void main(){ vec3 n=normalize(vN);
+        vec3 h=normalize(uL+viewDir());
+        float l=0.12+0.8*max(dot(n,uL),0.0)+0.3*pow(max(dot(n,h),0.0),30.0);
+        vec2 q=floor(gl_FragCoord.xy/(3.0*uDpr));
+        float lv=clamp(floor(l*3.0+b4(q)),0.0,3.0);
+        vec3 c=lv<0.5?vec3(0.06,0.22,0.06):lv<1.5?vec3(0.19,0.38,0.19):lv<2.5?vec3(0.55,0.67,0.06):vec3(0.61,0.74,0.06);
+        gl_FragColor=vec4(c,1.0); }`)) },
+  { s: 'npr', name: 'グーチシェーディング', tag: 'Gooch warm/cool',
+    desc: '明暗の代わりに「暖色〜寒色」で面の向きを表します。暗い部分も黒くつぶれないので、技術図解で形を分かりやすく見せるのに使われます。',
+    make: () => mesh(shader(`void main(){ vec3 n=normalize(vN); vec3 v=viewDir();
+      float t=(1.0+dot(n,uL))*0.5;
+      vec3 col=mix(vec3(0.16,0.26,0.66),vec3(1.0,0.76,0.36),t);
+      col+=vec3(pow(max(dot(n,normalize(uL+v)),0.0),60.0))*0.8;
+      col=mix(col,vec3(0.07,0.07,0.09),smoothstep(0.24,0.1,dot(n,v)));
+      gl_FragColor=vec4(col,1.0); }`)) },
+  { s: 'npr', name: 'ワイヤーフレーム', tag: 'wireframe: true',
+    desc: '面を塗らずに辺だけを描きます。なめらかに見えていた球が、実は三角形の集まりだと分かります。',
+    make: () => mesh(new THREE.MeshBasicMaterial({ color: 0x7fd6ff, wireframe: true }), new THREE.SphereGeometry(1, 28, 18)) },
+  { s: 'npr', name: '点群', tag: 'THREE.Points',
+    desc: '面の代わりに、表面上の点だけを描きます。3Dスキャンのデータやパーティクル表現の見た目です。',
+    make: () => { const N = 4200, pos = new Float32Array(N * 3), col = new Float32Array(N * 3), ga = Math.PI * (3 - Math.sqrt(5));
+      const c1 = new THREE.Color(0x6ff0c0), c2 = new THREE.Color(0x7f7bff), c = new THREE.Color();
+      for (let k = 0; k < N; k++) { const y = 1 - (k + .5) / N * 2, r = Math.sqrt(1 - y * y), a = k * ga;
+        pos.set([Math.cos(a) * r, y, Math.sin(a) * r], k * 3); c.copy(c1).lerp(c2, (y + 1) / 2); col.set([c.r, c.g, c.b], k * 3); }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      return new THREE.Points(g, new THREE.PointsMaterial({ size: .028, vertexColors: true })); } },
+
+  // fx
+  { s: 'fx', name: 'フレネル発光（X線風）', tag: 'fresnel · additive',
+    desc: '視線と面が直角に近い輪郭ほど強く光らせ、中心は透かしています。中に入れた結び目の形が透けて見えます。バリアや霊体の定番表現です。',
+    make: () => { const g = new THREE.Group();
+      g.add(mesh(std({ color: 0xf0a54a, roughness: .35, metalness: .2 }), new THREE.TorusKnotGeometry(.42, .13, 160, 20)));
+      const s = mesh(shader(`void main(){ vec3 n=normalize(vN); float fr=pow(1.0-abs(dot(n,viewDir())),2.4);
+        gl_FragColor=vec4(vec3(0.3,0.85,1.0)*(fr*1.3+0.03),1.0); }`, { transparent: true, additive: true, depthWrite: false, side: THREE.DoubleSide }));
+      s.renderOrder = 2; g.add(s); return g; } },
+  { s: 'fx', name: 'ホログラム', tag: 'fresnel + scanlines',
+    desc: 'フレネル発光に、横縞の走査線、流れる光の帯、細かいちらつきを重ねています。SF映画の投影映像の雰囲気です。',
+    make: () => { const s = mesh(shader(`void main(){ vec3 n=normalize(vN);
+      float fr=pow(1.0-abs(dot(n,viewDir())),1.6);
+      float scan=pow(0.5+0.5*sin(vW.y*90.0-uTime*6.0),3.0);
+      float sweep=smoothstep(0.88,1.0,fract(vW.y*0.45-uTime*0.35));
+      float flick=0.88+0.12*sin(uTime*37.0)*sin(uTime*13.0);
+      float a=(0.06+fr*0.9+scan*0.2+sweep*0.5)*flick;
+      gl_FragColor=vec4(vec3(0.3,0.95,0.85)*a,1.0); }`, { transparent: true, additive: true, depthWrite: false, side: THREE.DoubleSide })); return s; } },
+  { s: 'fx', name: 'ディゾルブ', tag: 'noise threshold · discard',
+    desc: 'ノイズの値がしきい値より小さい部分を描かずに捨て、その境目を光らせています。しきい値を上下させると、燃えて消えては戻ります。',
+    make: () => mesh(shader(`void main(){
+      float n=fbm(vP*1.8)*0.5+0.5;
+      float th=mix(0.12,0.86,0.5+0.5*sin(uTime*0.7));
+      if(n<th) discard;
+      float edge=1.0-smoothstep(0.0,0.05,n-th);
+      vec3 nn=normalize(vN); if(!gl_FrontFacing) nn=-nn;
+      vec3 base=shade(gl_FrontFacing?vec3(0.72,0.72,0.8):vec3(0.25,0.22,0.3),nn,0.4,40.0);
+      gl_FragColor=vec4(mix(base,vec3(1.6,0.7,0.2),edge),1.0); }`, { chunks: NOISE, side: THREE.DoubleSide })) }
+];
+
+/* ---------------- build DOM + scenes ---------------- */
+const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const views = [];
+const light = () => { const d = new THREE.DirectionalLight(0xffffff, 1.7); d.position.copy(L).multiplyScalar(10); return d; };
+
+for (const sec of SECTIONS) {
+  const el = document.createElement('section'); el.id = sec.id;
+  el.innerHTML = `<header><div class="eyebrow">${sec.en}</div><h2>${sec.title}</h2><p>${sec.lead}</p></header><div class="grid"></div>`;
+  const grid = el.querySelector('.grid');
+  for (const it of ITEMS.filter(i => i.s === sec.id)) {
+    const card = document.createElement('article'); card.className = 'card';
+    const stage = document.createElement('div'); stage.className = 'stage'; stage.tabIndex = 0;
+    stage.setAttribute('role', 'img'); stage.setAttribute('aria-label', it.name + 'の球（ドラッグで回転）');
+    const meta = document.createElement('div'); meta.className = 'meta';
+    meta.innerHTML = `<h3></h3><code></code><p></p>`;
+    meta.querySelector('h3').textContent = it.name; meta.querySelector('code').textContent = it.tag; meta.querySelector('p').textContent = it.desc;
+    card.append(stage, meta); grid.appendChild(card);
+    views.push({ el: stage, item: it, scene: null, root: null, rx: .35, ry: -.4, drag: null, last: -1e9 });
+  }
+  main.appendChild(el);
+}
+
+function buildScene(v) {
+  const scene = new THREE.Scene();
+  scene.background = BG; scene.environment = ENV;
+  scene.add(light()); scene.add(new THREE.HemisphereLight(0xffffff, 0x2a2a30, .3));
+  if (v.item.backdrop) {
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.6), new THREE.MeshBasicMaterial({ map: CHECK, toneMapped: false }));
+    p.position.z = -1.7; scene.add(p);
+  }
+  const root = new THREE.Group(); root.add(v.item.make()); scene.add(root);
+  v.scene = scene; v.root = root;
+}
+
+/* interaction */
+for (const v of views) {
+  const el = v.el;
+  el.addEventListener('pointerdown', (e) => { v.drag = { x: e.clientX, y: e.clientY, id: e.pointerId }; try { el.setPointerCapture(e.pointerId); } catch (_) {} });
+  el.addEventListener('pointermove', (e) => { if (!v.drag || v.drag.id !== e.pointerId) return;
+    v.ry += (e.clientX - v.drag.x) * .012; v.rx += (e.clientY - v.drag.y) * .012; v.rx = Math.max(-1.5, Math.min(1.5, v.rx));
+    v.drag.x = e.clientX; v.drag.y = e.clientY; v.last = performance.now(); });
+  const end = () => { v.drag = null; v.last = performance.now(); };
+  el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+  el.addEventListener('keydown', (e) => { const k = { ArrowLeft: [0, -.2], ArrowRight: [0, .2], ArrowUp: [-.2, 0], ArrowDown: [.2, 0] }[e.key];
+    if (k) { e.preventDefault(); v.rx = Math.max(-1.5, Math.min(1.5, v.rx + k[0])); v.ry += k[1]; v.last = performance.now(); } });
+}
+
+/* render loop: one canvas, one viewport per card */
+let prev = performance.now(); const t0 = prev;
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (canvas.width !== Math.floor(w * DPR) || canvas.height !== Math.floor(h * DPR)) renderer.setSize(w, h, false);
+}
+function frame(now) {
+  const dt = Math.min(.05, (now - prev) / 1000); prev = now;
+  U.uTime.value = (now - t0) / 1000;
+  resize();
+  renderer.setScissorTest(false); renderer.clear(); renderer.setScissorTest(true);
+  const H = canvas.clientHeight, W = canvas.clientWidth;
+  let built = 0;
+  for (const v of views) {
+    const r = v.el.getBoundingClientRect();
+    if (r.bottom < -40 || r.top > H + 40 || r.right < 0 || r.left > W || r.width < 2) continue;
+    if (!v.scene) { if (built > 1) continue; buildScene(v); built++; }
+    if (!v.drag && !REDUCED && now - v.last > 1600) v.ry += dt * .35;
+    v.root.rotation.set(v.rx, v.ry, 0);
+    renderer.setViewport(r.left, H - r.bottom, r.width, r.height);
+    renderer.setScissor(r.left, H - r.bottom, r.width, r.height);
+    renderer.render(v.scene, camera);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+
+<script src="../../assets/js/series.js" data-catalogue="material"></script>

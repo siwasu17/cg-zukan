@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ドット絵・2D技法図鑑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../assets/css/base.css">
+<link rel="stylesheet" href="../../assets/css/series.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+<div class="eyebrow">Pixel art & 2D techniques</div>
+<h1>ドット絵・2D技法図鑑</h1>
+<p class="lead">使える色も画素も少なかった時代のゲームは、その制約の中で驚くほど豊かな表現を生み出しました。色を差し替えて敵の種類を増やす、色を回して水を流す、点の並べ方で中間色を作る、背景を何層にも分けて奥行きを出す。今のドット絵ゲームにも受け継がれている技法を集めました。</p>
+<p class="note">キャラクターや背景は、すべてページの中の小さなデータから描いています。画面のドットは拡大して表示しています。</p>
+<dl class="gloss">
+  <div><dt>ドット（ピクセル）</dt><dd>画面を作る最小の四角。ドット絵は、この四角を1つずつ置いて絵を描く。</dd></div>
+  <div><dt>パレット</dt><dd>その絵で使う色の一覧。絵は「何番の色か」だけを覚えていて、色そのものは一覧から引く。</dd></div>
+  <div><dt>スプライト</dt><dd>背景の上を動くキャラクターなどの小さな絵。背景とは別に描いて重ねる。</dd></div>
+</dl>
+<div class="series" id="series"></div>
+<div class="controls"><button id="play" type="button" aria-pressed="false">一時停止</button><button id="resetAll" type="button">すべて最初から</button></div>
+<nav id="nav" aria-label="カテゴリ"></nav>
+</header>
+<main id="main"></main>
+<footer>ドット絵もすべてページ内のデータから描いています。Canvas 2D と JavaScript でその場で計算しています。</footer>
+</div>
+<script src="../../assets/js/g2d.js"></script>
+<script src="../../assets/js/series.js" data-catalogue="pixel"></script>
+<script src="main.js"></script>
+</body>
+</html>

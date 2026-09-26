@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>パーティクル・エフェクト図鑑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../assets/css/base.css">
+<link rel="stylesheet" href="../../assets/css/series.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+<div class="eyebrow">Particle effect catalogue</div>
+<h1>パーティクル・エフェクト図鑑</h1>
+<p class="lead">炎も煙も爆発も魔法も、ゲームのエフェクトの多くは「小さな粒をたくさん出して、少し動かして、消す」という同じ仕組みでできています。違うのは、粒を出す量、寿命、速さ、重力、そして寿命に合わせた色と大きさの変え方です。まず仕組みを分解して見てから、実際のエフェクトを並べます。</p>
+<p class="note">カードをクリック（タップ）すると、その場所で発生させたり、もう一度再生したりできます。</p>
+<dl class="gloss">
+  <div><dt>パーティクル</dt><dd>エフェクトを作る1つ1つの粒。位置・速さ・寿命・色・大きさを持ち、毎フレーム少しずつ動いて、寿命が来たら消える。</dd></div>
+  <div><dt>エミッター</dt><dd>粒を出す装置。1フレームに何個出すか、どの範囲から、どの向きにどれくらいの速さで出すかを決める。</dd></div>
+  <div><dt>加算合成</dt><dd>重なった部分の色を足し算する描き方。重なるほど明るくなるので、光・炎・魔法に使う。</dd></div>
+</dl>
+<div class="series" id="series"></div>
+<div class="controls"><button id="play" type="button" aria-pressed="false">一時停止</button><button id="resetAll" type="button">すべて最初から</button></div>
+<nav id="nav" aria-label="カテゴリ"></nav>
+</header>
+<main id="main"></main>
+<footer>すべて Canvas 2D と JavaScript で、その場で計算して描いています。</footer>
+</div>
+<script src="../../assets/js/g2d.js"></script>
+<script src="../../assets/js/series.js" data-catalogue="particles"></script>
+<script src="main.js"></script>
+</body>
+</html>

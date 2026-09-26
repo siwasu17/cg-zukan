@@ -1,0 +1,14 @@
+{
+  "name": "cg-zukan",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CG・ゲーム表現図鑑",
+  "type": "module",
+  "scripts": {
+    "serve": "node scripts/serve.mjs",
+    "check": "node scripts/check.mjs",
+    "new": "node scripts/new-catalogue.mjs",
+    "thumbnail": "node scripts/thumbnail.mjs"
+  },
+  "engines": { "node": ">=18" }
+}

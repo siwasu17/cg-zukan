@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ポストエフェクト図鑑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../assets/css/base.css">
+<link rel="stylesheet" href="../../assets/css/series.css">
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="wrap">
+<header class="top">
+<div class="eyebrow">Post-processing catalogue</div>
+<h1>ポストエフェクト図鑑</h1>
+<p class="lead">ゲームや映画の映像は、3Dの場面を描いたあとに、写真の加工アプリのような「仕上げのフィルター」をかけて完成させています。これをポストエフェクト（ポストプロセス）と呼びます。ここでは同じ1つの場面に、カードごとに違うフィルターをかけました。場面はまったく同じなのに、雰囲気が大きく変わります。</p>
+<p class="note">ドラッグ（またはフォーカスして矢印キー）で場面を回せます。左右で比べるカードは、境目の線が左右に動きます。</p>
+<dl class="gloss">
+  <div><dt>ポストエフェクト</dt><dd>描き終わった画像に対して、画面の1点1点ごとに色を計算し直す処理。3Dの場面そのものは変えない。</dd></div>
+  <div><dt>深度（デプス）</dt><dd>画面の各点が、カメラからどれくらい離れているかの情報。ぼかしや霧、輪郭線の計算に使う。</dd></div>
+  <div><dt>HDR</dt><dd>画面に出せる明るさ（0〜1）を超える明るさも記録しておく方法。まぶしい光のにじみや、明るさの調整に使う。</dd></div>
+</dl>
+<div class="series" id="series"></div>
+<nav id="nav" aria-label="カテゴリ"></nav>
+</header>
+<main id="main"></main>
+<footer>three.js r149 で場面を描いたあと、自作の GLSL シェーダーで仕上げのフィルターをかけています。</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script src="../../assets/js/g3d.js"></script>
+<script src="../../assets/js/series.js" data-catalogue="post"></script>
+<script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body { margin: 0; } [hidden] { display: none !important; }</style>
+<link rel="stylesheet" href="../../assets/css/series.css">
+<title>弾幕図鑑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #15171b;
+    --panel: #1b1e23;
+    --line: #2c3038;
+    --ink: #ece8e0;
+    --muted: #9da2ac;
+    --accent: #f0a54a;
+  }
+  html, body { background: var(--bg); color: var(--ink); }
+  body { font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif; font-size: 15px; line-height: 1.75; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding-inline: 20px; padding-block: 44px 96px; }
+  header.top h1 {
+    font-family: "Dela Gothic One", "Zen Kaku Gothic New", sans-serif; font-weight: 400;
+    font-size: clamp(38px, 7vw, 72px); line-height: 1.1; margin: 0 0 18px; letter-spacing: .02em;
+  }
+  .eyebrow { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  .lead { max-width: 42em; font-size: 16px; margin: 0; }
+  .note { max-width: 42em; color: var(--muted); font-size: 13.5px; margin: 10px 0 0; }
+  .note a { color: var(--accent); }
+  .gloss { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 28px 0 0; }
+  .gloss div { border-top: 1px solid var(--line); padding-top: 12px; }
+  .gloss dt { font-weight: 700; }
+  .gloss dd { margin: 4px 0 0; color: var(--muted); font-size: 13.5px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 26px; }
+  button {
+    font: inherit; font-size: 13.5px; color: var(--ink); background: var(--panel);
+    border: 1px solid var(--line); padding: 5px 14px; border-radius: 999px; cursor: pointer;
+  }
+  button:hover, button:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+  button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  nav a { color: var(--ink); text-decoration: none; font-size: 13.5px; border: 1px solid var(--line); padding: 5px 13px; border-radius: 999px; background: var(--panel); }
+  nav a:hover, nav a:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+
+  section { margin-top: 68px; scroll-margin-top: 20px; }
+  section > header { display: grid; gap: 6px; margin-bottom: 20px; }
+  section h2 { font-size: clamp(22px, 3vw, 28px); line-height: 1.3; margin: 0; font-weight: 700; }
+  section > header p { margin: 0; color: var(--muted); max-width: 46em; font-size: 14.5px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
+  canvas.stage { display: block; width: 100%; max-width: 100%; aspect-ratio: 4 / 5; background: #0b0e1a; border-bottom: 1px solid var(--line); touch-action: pan-y; cursor: crosshair; }
+  .meta { padding: 12px 14px 16px; display: grid; gap: 4px; }
+  .meta .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .meta h3 { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.4; }
+  .meta button { font-size: 11.5px; padding: 1px 9px; flex: none; }
+  .meta code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11.5px; color: var(--accent); overflow-wrap: anywhere; }
+  .meta p { margin: 2px 0 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
+  footer { margin-top: 80px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; }
+  @media (max-width: 560px) {
+    .wrap { padding-inline: 16px; }
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .meta { padding: 10px 10px 12px; }
+    .meta h3 { font-size: 14.5px; }
+    .meta p { font-size: 12.5px; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Bullet pattern catalogue</div>
+    <h1>弾幕図鑑</h1>
+    <p class="lead">画面を埋めつくす弾幕も、1発1発は「どこから・どの向きに・どの速さで」撃つかの3つの数字で決まっています。あとは「いつ撃つか」と「撃った後にどう変えるか」の規則の組み合わせです。ここでは基本の撃ち方から、それを重ねたボス戦風の弾幕、裏側の仕組みまでを並べました。</p>
+    <p class="note">カードの上にカーソルを置く（スマホではタップする）と、画面下の自機がついてきます。自機を狙う弾幕は、動かすと撃ってくる向きが変わります。<a href="../material/">球体マテリアル図鑑</a>と<a href="../furfluid/">毛と流体の球体図鑑</a>の続編です。</p>
+    <dl class="gloss">
+      <div><dt>自機</dt><dd>プレイヤーが操作する機体。画面下の小さな機体で、中央の白い点が本当の当たり判定。</dd></div>
+      <div><dt>フレーム</dt><dd>画面が1回更新される単位。ここでは1秒に60フレームで、弾は毎フレーム少しずつ進む。</dd></div>
+      <div><dt>角度と速さ</dt><dd>弾の動きは「向き」と「1フレームに進む距離」の2つで表す。右が0°、下が90°。</dd></div>
+    </dl>
+    <div class="controls">
+      <button id="play" type="button" aria-pressed="false">一時停止</button>
+      <button id="resetAll" type="button">すべて最初から</button>
+    </div>
+    <nav id="nav" aria-label="カテゴリ"></nav>
+  <div class="series" id="series"></div>
+</header>
+  <main id="main"></main>
+  <footer>すべて Canvas 2D と JavaScript で、その場で弾を計算して描いています。同じ乱数の種を使っているので、「最初から」を押すと毎回同じ弾幕が再生されます。</footer>
+</div>
+
+<script>
+(function () {
+'use strict';
+const W = 240, H = 300, DEG = Math.PI / 180;
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+const COL = { red: '#ff5470', orange: '#ff9f43', yellow: '#ffd84d', green: '#5ef08a', cyan: '#4fe0ff', blue: '#5b8cff', purple: '#b57bff', pink: '#ff7ad9', white: '#ffffff' };
+const SIZE = { orb: [18, 18], small: [11, 11], big: [34, 34], rice: [17, 10], kunai: [20, 11], star: [17, 17] };
+const HB = { orb: 3, small: 2, big: 8, rice: 2.5, kunai: 2.5, star: 3 };
+const ORIENT = { rice: 1, kunai: 1 };
+
+function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+/* ---------- bullet sprites (pre-rendered once per type/colour) ---------- */
+const sprites = new Map();
+function sprite(type, col) {
+  const key = type + col; let s = sprites.get(key); if (s) return s;
+  const [w, h] = SIZE[type], k = 3, c = document.createElement('canvas'); c.width = w * k; c.height = h * k;
+  const g = c.getContext('2d'); g.scale(k, k); g.translate(w / 2, h / 2);
+  const hex = COL[col] || col;
+  if (type === 'orb' || type === 'small' || type === 'big') {
+    const r = w / 2, gr = g.createRadialGradient(0, 0, 0, 0, 0, r);
+    gr.addColorStop(0, '#fff'); gr.addColorStop(.34, '#fff'); gr.addColorStop(.5, hex); gr.addColorStop(.72, hex + 'aa'); gr.addColorStop(1, hex + '00');
+    g.fillStyle = gr; g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.fill();
+  } else if (type === 'rice') {
+    g.shadowColor = hex; g.shadowBlur = 4; g.fillStyle = hex;
+    g.beginPath(); g.ellipse(0, 0, 7, 3.4, 0, 0, Math.PI * 2); g.fill(); g.shadowBlur = 0;
+    g.fillStyle = '#fff'; g.beginPath(); g.ellipse(0, 0, 4.2, 1.5, 0, 0, Math.PI * 2); g.fill();
+  } else if (type === 'kunai') {
+    g.shadowColor = hex; g.shadowBlur = 4; g.fillStyle = hex;
+    g.beginPath(); g.moveTo(8.5, 0); g.lineTo(0, -3.6); g.lineTo(-8, -2); g.lineTo(-8, 2); g.lineTo(0, 3.6); g.closePath(); g.fill(); g.shadowBlur = 0;
+    g.strokeStyle = '#fff'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(6, 0); g.lineTo(-6, 0); g.stroke();
+  } else if (type === 'star') {
+    const star = (R, r) => { g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r : R; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } g.closePath(); };
+    g.shadowColor = hex; g.shadowBlur = 4; g.fillStyle = hex; star(7.5, 3.3); g.fill(); g.shadowBlur = 0; g.fillStyle = '#fff'; star(3.8, 1.7); g.fill();
+  }
+  s = c; sprites.set(key, s); return s;
+}
+
+/* ---------- the stage: tiny shmup simulation per card ---------- */
+class Stage {
+  constructor(canvas, def) { this.c = canvas; this.g = canvas.getContext('2d'); this.def = def; this.reset(); }
+  reset() {
+    this.t = 0; this.bullets = []; this.pool = []; this.rand = rng(this.def.seed || 7);
+    this.E = { x: W / 2, y: 70 }; this.P = { x: W / 2, y: 255 }; this.ptr = null;
+    this.grazes = 0; this.hits = 0; this.flash = 0; this.ms = 0; this.mem = {};
+  }
+  fire(o) {
+    const b = this.pool.pop() || {};
+    b.x = o.x !== undefined ? o.x : this.E.x; b.y = o.y !== undefined ? o.y : this.E.y;
+    b.a = (o.a || 0) * DEG; b.v = o.v || 0; b.acc = o.acc || 0;
+    b.vmin = o.vmin !== undefined ? o.vmin : -99; b.vmax = o.vmax !== undefined ? o.vmax : 99;
+    b.av = (o.av || 0) * DEG; b.avT = o.avT !== undefined ? o.avT : 1e9;
+    b.type = o.type || 'orb'; b.col = o.col || 'red'; b.upd = o.upd || null;
+    b.age = 0; b.dead = false; b.bounce = o.bounce || 0; b.gr = o.g || 0; b.margin = o.margin !== undefined ? o.margin : 20;
+    b.wave = o.wave || null; b.bx = b.x; b.by = b.y; b.rot = b.a; b.grazed = false; b.hit = false;
+    this.bullets.push(b); return b;
+  }
+  aim() { return this.aimFrom(this.E.x, this.E.y); }
+  aimFrom(x, y) { return Math.atan2(this.P.y - y, this.P.x - x) / DEG; }
+  step() {
+    const t0 = performance.now(), P = this.P, t = this.t;
+    if (this.ptr) { P.x += (Math.max(8, Math.min(W - 8, this.ptr.x)) - P.x) * .2; P.y += (Math.max(130, Math.min(H - 12, this.ptr.y)) - P.y) * .2; }
+    else if (!this.def.still) { P.x = W / 2 + 78 * Math.sin(t * .013) + 18 * Math.sin(t * .037); P.y = 255 + 8 * Math.sin(t * .021); }
+    this.E.x = W / 2 + (this.def.still ? 0 : 12 * Math.sin(t * .011));
+    this.def.pattern(this);
+    const list = this.bullets, n = list.length;
+    for (let i = 0; i < n; i++) {
+      const b = list[i]; if (b.dead) continue;
+      b.age++; if (b.upd) { b.upd(b, this); if (b.dead) continue; }
+      const px = b.x, py = b.y;
+      b.v = Math.max(b.vmin, Math.min(b.vmax, b.v + b.acc));
+      if (b.age <= b.avT) b.a += b.av;
+      if (b.gr) { const vx = Math.cos(b.a) * b.v, vy = Math.sin(b.a) * b.v + b.gr; b.a = Math.atan2(vy, vx); b.v = Math.hypot(vx, vy); }
+      if (b.wave) {
+        b.bx += Math.cos(b.a) * b.v; b.by += Math.sin(b.a) * b.v;
+        const o = b.wave.amp * Math.sin(b.age * b.wave.freq + b.wave.ph);
+        b.x = b.bx - Math.sin(b.a) * o; b.y = b.by + Math.cos(b.a) * o;
+      } else { b.x += Math.cos(b.a) * b.v; b.y += Math.sin(b.a) * b.v; }
+      if (b.bounce > 0) {
+        const c = Math.cos(b.a), s = Math.sin(b.a);
+        if ((b.x < 4 && c < 0) || (b.x > W - 4 && c > 0)) { b.a = Math.PI - b.a; b.bounce--; }
+        else if (b.y < 4 && s < 0) { b.a = -b.a; b.bounce--; }
+      }
+      const dx = b.x - px, dy = b.y - py; if (dx * dx + dy * dy > 1e-4) b.rot = Math.atan2(dy, dx);
+      const m = b.margin; if (b.x < -m || b.x > W + m || b.y < -m || b.y > H + m) b.dead = true;
+      if (this.def.judge && !b.dead) {
+        const ddx = b.x - P.x, ddy = b.y - P.y, d2 = ddx * ddx + ddy * ddy, hr = HB[b.type] + 1.5;
+        if (d2 < hr * hr) { if (!b.hit) { b.hit = true; this.hits++; this.flash = 20; } }
+        else if (d2 < 18 * 18 && !b.grazed) { b.grazed = true; this.grazes++; }
+      }
+    }
+    for (let i = list.length - 1; i >= 0; i--) if (list[i].dead) { const d = list[i]; list[i] = list[list.length - 1]; list.pop(); d.upd = null; d.wave = null; this.pool.push(d); }
+    if (this.flash > 0) this.flash--;
+    this.t++;
+    this.ms = this.ms * .9 + (performance.now() - t0) * .1;
+  }
+  resize() {
+    const w = Math.round(this.c.clientWidth * DPR), h = Math.round(this.c.clientHeight * DPR);
+    if (w && h && (this.c.width !== w || this.c.height !== h)) { this.c.width = w; this.c.height = h; }
+  }
+  draw() {
+    this.resize();
+    const g = this.g, s = this.c.width / W, t = this.t;
+    g.setTransform(s, 0, 0, s, 0, 0);
+    const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#10142a'); bg.addColorStop(1, '#090b14');
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    g.strokeStyle = 'rgba(130,150,220,.07)'; g.lineWidth = 1; g.beginPath();
+    const off = (t * .6) % 24;
+    for (let y = off - 24; y < H; y += 24) { g.moveTo(0, y); g.lineTo(W, y); }
+    for (let x = 12; x < W; x += 24) { g.moveTo(x, 0); g.lineTo(x, H); }
+    g.stroke();
+    if (this.def.drawBack) this.def.drawBack(g, this);
+    // enemy
+    if (!this.def.noEnemy) {
+      const E = this.E, gl = g.createRadialGradient(E.x, E.y, 0, E.x, E.y, 22);
+      gl.addColorStop(0, 'rgba(240,165,74,.45)'); gl.addColorStop(1, 'rgba(240,165,74,0)');
+      g.fillStyle = gl; g.beginPath(); g.arc(E.x, E.y, 22, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = '#f0a54a'; g.lineWidth = 1.6; g.beginPath();
+      for (let i = 0; i < 6; i++) { const a = t * .03 + i * Math.PI / 3; g.lineTo(E.x + Math.cos(a) * 9, E.y + Math.sin(a) * 9); }
+      g.closePath(); g.stroke(); g.fillStyle = '#f0a54a'; g.beginPath(); g.arc(E.x, E.y, 3, 0, Math.PI * 2); g.fill();
+    }
+    // player
+    const P = this.P;
+    g.fillStyle = this.flash > 0 && (this.flash >> 2) % 2 ? '#ff5470' : '#dfe6ff';
+    g.beginPath(); g.moveTo(P.x, P.y - 9); g.lineTo(P.x + 7, P.y + 7); g.lineTo(P.x, P.y + 3); g.lineTo(P.x - 7, P.y + 7); g.closePath(); g.fill();
+    g.fillStyle = '#fff'; g.strokeStyle = '#ff5470'; g.lineWidth = 1; g.beginPath(); g.arc(P.x, P.y, 2.2, 0, Math.PI * 2); g.fill(); g.stroke();
+    // bullets
+    const alpha = this.def.spriteAlpha || 1, list = this.bullets;
+    for (let i = 0; i < list.length; i++) {
+      const b = list[i], spr = sprite(b.type, b.col), sz = SIZE[b.type];
+      const grow = b.age < 8 ? .4 + .6 * b.age / 8 : 1;
+      const ang = ORIENT[b.type] ? b.rot : b.type === 'star' ? b.age * .12 : 0;
+      const ca = Math.cos(ang) * grow * s, sa = Math.sin(ang) * grow * s;
+      g.globalAlpha = alpha * (b.age < 8 ? b.age / 8 : 1);
+      g.setTransform(ca, sa, -sa, ca, b.x * s, b.y * s);
+      g.drawImage(spr, -sz[0] / 2, -sz[1] / 2, sz[0], sz[1]);
+    }
+    g.globalAlpha = 1; g.setTransform(s, 0, 0, s, 0, 0);
+    if (this.def.drawFront) this.def.drawFront(g, this);
+    // HUD
+    g.font = '500 9.5px "JetBrains Mono", ui-monospace, monospace'; g.textBaseline = 'alphabetic';
+    const hud = ['弾 ' + list.length].concat(this.def.hud ? this.def.hud(this) : []);
+    g.fillStyle = 'rgba(9,11,20,.6)'; g.fillRect(4, H - 16 - (hud.length - 1) * 12, 108, 13 + (hud.length - 1) * 12);
+    g.fillStyle = '#c9cfdf'; hud.forEach((line, i) => g.fillText(line, 8, H - 6 - (hud.length - 1 - i) * 12));
+  }
+}
+
+/* ---------- helpers for patterns ---------- */
+const every = (s, n, o = 0) => (s.t + o) % n === 0;
+function starPoints(nPts, perEdge, inner) {
+  const v = []; for (let i = 0; i < nPts * 2; i++) { const a = -Math.PI / 2 + i * Math.PI / nPts, r = i % 2 ? inner : 1; v.push([Math.cos(a) * r, Math.sin(a) * r]); }
+  const out = []; for (let i = 0; i < v.length; i++) { const p = v[i], q = v[(i + 1) % v.length]; for (let k = 0; k < perEdge; k++) { const u = k / perEdge; out.push([p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u]); } }
+  return out;
+}
+
+/* ---------- catalogue ---------- */
+const SECTIONS = [
+  { id: 'basic', en: 'Aiming', title: '狙い方の基本', lead: '弾幕の出発点は「どの向きに撃つか」。自機を狙うか、狙わないか、乱数に任せるか。ここの違いで、避け方がまったく変わります。' },
+  { id: 'rotate', en: 'Rings & spirals', title: '円と回転', lead: '撃つ向きを等間隔に並べたり、時間とともに回したりすると、円やらせんが生まれます。弾1発1発はまっすぐ飛んでいるだけです。' },
+  { id: 'speed', en: 'Speed control', title: '速さを変える', lead: '撃った後に弾の速さを変えると、同じ角度でも見え方が大きく変わります。加速・減速・停止・逆走がよく使われます。' },
+  { id: 'change', en: 'Behaviours', title: '飛び方を変える', lead: '分裂、反射、追尾、重力、揺れなど、弾ごとに「毎フレームやること」を持たせる方法です。' },
+  { id: 'shape', en: 'Formations', title: '形と組み合わせ', lead: '弾の並べ方で形を描いたり、壁や檻を作ったり。基本パターンを重ねると、ボス戦のような弾幕になります。' },
+  { id: 'engine', en: 'Under the hood', title: '裏側の仕組み', lead: '見た目と当たり判定の関係や、大量の弾を軽く動かすための工夫など、遊ぶ人からは見えない部分です。' }
+];
+
+const ITEMS = [
+  { s: 'basic', name: '自機狙い弾', tag: 'angle = atan2(自機 − 敵)',
+    desc: '撃つ瞬間の自機の位置に向けて撃つ、最も基本の弾。角度はアークタンジェント1回で求まります。狙うのは「撃った瞬間」の位置なので、動き続けていれば後ろを通り過ぎます。',
+    pattern: s => { if (every(s, 8)) s.fire({ a: s.aim(), v: 3.2, type: 'orb', col: 'red' }); } },
+  { s: 'basic', name: '固定弾', tag: 'angle = 90° ± 15° × i',
+    desc: '自機の位置と関係なく、決まった向きに撃つ弾。1波ごとに半分ずつずらして、すき間の位置を変えています。覚えれば安全な場所が分かります。',
+    pattern: s => { if (every(s, 22)) { const off = (s.t / 22) % 2 ? 7.5 : 0; for (let i = -3; i <= 3; i++) s.fire({ a: 90 + i * 15 + off, v: 2.2, type: 'rice', col: 'green' }); } } },
+  { s: 'basic', name: 'ばらまき弾', tag: 'angle, speed = random',
+    desc: '角度と速さを乱数で決めてまく弾。毎回配置が違うので覚えられず、その場ですき間を見つけて避けます。',
+    pattern: s => { const cs = ['cyan', 'blue', 'purple', 'pink']; for (let k = 0; k < 2; k++) s.fire({ a: 20 + s.rand() * 140, v: 1.2 + s.rand() * 2.4, type: 'small', col: cs[(s.rand() * 4) | 0] }); } },
+  { s: 'basic', name: '自機狙い n-way', tag: '5-way × 3',
+    desc: '自機を狙う角度を中心に、14°ずつ開いた扇形で5発。狙いは最初に1回だけ決めて3回撃つので、撃っている間に横へ動けば避けられます。',
+    pattern: s => { const c = s.t % 60; if (c === 0) s.mem.b = s.aim(); if (c < 24 && c % 7 === 0) for (let i = -2; i <= 2; i++) s.fire({ a: s.mem.b + i * 14, v: 3, type: 'rice', col: 'cyan' }); } },
+  { s: 'basic', name: '奇数弾と偶数弾', tag: '3-way / 4-way',
+    desc: '赤は3発で、真ん中が自機に向かう（奇数弾）。青は4発で、自機の左右をすり抜ける（偶数弾）。止まっている自機に偶数弾は当たりません。シューティングの定番用語です。',
+    pattern: s => { const c = s.t % 90; if (c === 0) { const b = s.aim(); for (let i = -1; i <= 1; i++) s.fire({ a: b + i * 18, v: 2.8, type: 'orb', col: 'red' }); }
+      if (c === 45) { const b = s.aim(); for (let i = 0; i < 4; i++) s.fire({ a: b + (i - 1.5) * 18, v: 2.8, type: 'orb', col: 'blue' }); } } },
+
+  { s: 'rotate', name: '全方位弾', tag: '360° ÷ 24',
+    desc: '360°を24等分した角度へ同時に撃ちます。毎回の向きを乱数で少し回して、すき間の位置を変えています。',
+    pattern: s => { if (every(s, 32)) { const o = s.rand() * 360; for (let i = 0; i < 24; i++) s.fire({ a: o + i * 15, v: 2, type: 'orb', col: 'purple' }); } } },
+  { s: 'rotate', name: '回転撃ち', tag: 'angle += 7.2° / 3 frames',
+    desc: '撃つ角度を少しずつ回しながら撃ち続けると、らせんになります。4方向同時なので腕が4本。弾そのものは、どれもまっすぐ飛んでいます。',
+    pattern: s => { if (every(s, 3)) { const b = s.t * 2.4; for (let k = 0; k < 4; k++) s.fire({ a: b + k * 90, v: 2.4, type: 'rice', col: 'yellow' }); } } },
+  { s: 'rotate', name: '逆回転の二重らせん', tag: '+θ と −θ',
+    desc: '右回りと左回りのらせんを重ねたもの。2つが交差して網目ができ、そのすき間をくぐって避けます。',
+    pattern: s => { if (every(s, 4)) { const b = s.t * 2.2; for (let k = 0; k < 3; k++) { s.fire({ a: b + k * 120, v: 2.2, type: 'small', col: 'pink' }); s.fire({ a: -b + k * 120 + 60, v: 2.2, type: 'small', col: 'cyan' }); } } } },
+  { s: 'rotate', name: '振り子回転', tag: 'angle = 90° + 70° · sin(t)',
+    desc: '角度を一方向に回し続けるのではなく、sin関数で左右に振っています。6方向に撃っているので、波打つ帯になります。',
+    pattern: s => { if (every(s, 5)) { const b = 90 + 70 * Math.sin(s.t * .025); for (let k = 0; k < 6; k++) s.fire({ a: b + k * 60, v: 2.3, type: 'rice', col: 'orange' }); } } },
+  { s: 'rotate', name: '曲がる弾', tag: 'angle += ±1.1° / frame',
+    desc: '撃った後も、弾の向きを毎フレーム少しずつ変えています。一定時間だけ曲げてから直進させるので、渦を巻きながら広がります。',
+    pattern: s => { if (every(s, 36)) { const dir = (s.t / 36) % 2 ? 1 : -1, o = s.rand() * 360; for (let i = 0; i < 18; i++) s.fire({ a: o + i * 20, v: 1.8, av: dir * 1.1, avT: 80, type: 'rice', col: dir > 0 ? 'blue' : 'green' }); } } },
+
+  { s: 'speed', name: '加速弾', tag: 'speed += 0.06',
+    desc: 'ゆっくり出てきて、だんだん速くなる弾。敵の近くでは遅いので油断しやすく、自機の近くでは速くなっています。',
+    pattern: s => { if (every(s, 40)) { const o = s.rand() * 360; for (let i = 0; i < 20; i++) s.fire({ a: o + i * 18, v: .3, acc: .06, vmax: 5, type: 'orb', col: 'red' }); } } },
+  { s: 'speed', name: '停止 → 自機狙い', tag: 'speed → 0 → re-aim',
+    desc: '広がった弾がいったん止まり、少し間を置いてから一斉に自機へ向かってきます。色が変わるのが合図。狙うのは、動き出す瞬間の自機の位置です。',
+    pattern: s => { if (every(s, 80)) { const o = s.rand() * 360; for (let i = 0; i < 16; i++) s.fire({ a: o + i * 22.5, v: 3.2, acc: -.08, vmin: 0, type: 'orb', col: 'purple',
+      upd: (b, st) => { if (b.age === 70) { b.a = st.aimFrom(b.x, b.y) * DEG; b.acc = .1; b.vmax = 3.4; b.col = 'red'; } } }); } } },
+  { s: 'speed', name: '速度差の列弾', tag: '14 方向 × 5 段階の速さ',
+    desc: '同じ角度に、速さの違う弾を5発ずつ同時に撃ちます。速い弾ほど先に進むので、1本の線のように伸びていきます。',
+    pattern: s => { if (every(s, 50)) { const o = s.rand() * 360, cs = ['cyan', 'blue', 'purple', 'pink', 'red']; for (let i = 0; i < 14; i++) for (let j = 0; j < 5; j++) s.fire({ a: o + i * 360 / 14, v: 1.2 + j * .45, type: 'small', col: cs[j] }); } } },
+  { s: 'speed', name: '引き戻し弾', tag: 'speed → マイナス',
+    desc: '減速がゼロを超えてマイナスになると、弾は来た道を逆走して、敵の向こう側へ抜けていきます。一度通り過ぎた弾が戻ってくるので要注意。',
+    pattern: s => { if (every(s, 45)) { const o = s.rand() * 360; for (let i = 0; i < 20; i++) s.fire({ a: o + i * 18, v: 3.4, acc: -.07, vmin: -2.6, type: 'rice', col: 'yellow' }); } } },
+
+  { s: 'change', name: '分裂弾', tag: '大玉 → 小弾 14 発',
+    desc: '大玉が一定時間後に消え、その場所から小さな全方位弾を出します。大玉を見て、分裂する場所を予想して離れておくのがコツです。',
+    pattern: s => { if (every(s, 60)) s.fire({ a: s.aim() + (s.rand() - .5) * 50, v: 1.6, type: 'big', col: 'orange',
+      upd: (b, st) => { if (b.age === 55) { b.dead = true; for (let i = 0; i < 14; i++) st.fire({ x: b.x, y: b.y, a: i * 360 / 14 + st.t, v: 1.8, type: 'small', col: 'yellow' }); } } }); } },
+  { s: 'change', name: '反射弾', tag: 'angle = 180° − angle',
+    desc: '画面の左右と上の端に当たると、1回だけ跳ね返ります。跳ね返った弾は、思わぬ方向から戻ってきます。',
+    pattern: s => { if (every(s, 40)) { const o = s.rand() * 360; for (let i = 0; i < 12; i++) s.fire({ a: o + i * 30, v: 2.2, type: 'orb', col: 'green', bounce: 1 }); } } },
+  { s: 'change', name: '誘導弾', tag: 'turn ≤ 2.2° / frame',
+    desc: '毎フレーム自機の方向を計算して向きを変えます。1フレームに曲がれる角度に上限があり、一定時間で追いかけるのをやめるので、引きつけてから横に動けばかわせます。',
+    pattern: s => { if (every(s, 30)) for (const side of [-1, 1]) s.fire({ x: s.E.x + side * 20, a: 90 - side * 60, v: 2.4, type: 'kunai', col: 'pink',
+      upd: (b, st) => { if (b.age < 100) { const want = st.aimFrom(b.x, b.y) * DEG; let d = want - b.a; d = Math.atan2(Math.sin(d), Math.cos(d)); b.a += Math.max(-2.2 * DEG, Math.min(2.2 * DEG, d)); } } }); } },
+  { s: 'change', name: '重力弾', tag: 'vy += 0.06',
+    desc: '上向きに打ち上げ、毎フレーム下向きの速さを足しています。噴水のような放物線を描いて降ってきます。',
+    pattern: s => { if (every(s, 3)) s.fire({ a: -90 + (s.rand() - .5) * 90, v: 3 + s.rand() * 1.5, type: 'small', col: s.rand() < .5 ? 'cyan' : 'blue', g: .06, margin: 220 }); } },
+  { s: 'change', name: '波打つ弾', tag: 'x = 基準点 + sin(age)',
+    desc: '進む向きと直角の方向に、sin関数で揺らしています。まっすぐ進む見えない基準点の周りを、左右に揺れているだけです。',
+    pattern: s => { if (every(s, 10)) for (let k = -2; k <= 2; k++) s.fire({ x: s.E.x + k * 40, a: 90, v: 1.8, type: 'rice', col: 'blue', wave: { amp: 18, freq: .08, ph: s.t * .05 + k } }); } },
+
+  { s: 'shape', name: '図形を描く弾幕', tag: 'speed ∝ 中心からの距離',
+    desc: '星形の輪郭の上に点を並べ、中心からの距離に比例した速さで一斉に撃ちます。全部が同じ時間で広がるので、形を保ったまま大きくなります。',
+    pattern: s => { if (every(s, 60)) { const rot = s.t * .9 * DEG, pts = starPoints(5, 8, .42), cs = ['yellow', 'orange', 'pink'], col = cs[(s.t / 60) % 3];
+      for (const [px, py] of pts) { const x = px * Math.cos(rot) - py * Math.sin(rot), y = px * Math.sin(rot) + py * Math.cos(rot); s.fire({ a: Math.atan2(y, x) / DEG, v: 2.2 * Math.hypot(x, y), type: 'small', col }); } } } },
+  { s: 'shape', name: '壁弾', tag: 'gap = random',
+    desc: '画面の横幅いっぱいに弾を並べ、1か所だけすき間を空けて降らせます。すき間の位置を読んで、先回りして移動します。',
+    pattern: s => { if (every(s, 46)) { const gap = 30 + s.rand() * 180; for (let x = 8; x < W; x += 14) { if (Math.abs(x - gap) < 22) continue; s.fire({ x, y: -6, a: 90, v: 1.6, type: 'orb', col: 'red', margin: 30 }); } } } },
+  { s: 'shape', name: 'レーザー', tag: '予告線 → 照射',
+    desc: '先に細い予告線を出し、少し遅れて太い光線を撃ちます。予告線は「避けられるようにする」ための配慮で、多くのゲームで使われています。',
+    pattern: s => { if (!s.mem.las) s.mem.las = []; if (every(s, 110)) { const b = s.aim(); for (const d of [-28, 0, 28]) s.mem.las.push({ a: (b + d) * DEG, t: 0, sw: (s.rand() - .5) * .006 }); }
+      for (const l of s.mem.las) { l.t++; if (l.t > 45) l.a += l.sw; } s.mem.las = s.mem.las.filter(l => l.t < 90); },
+    drawBack: (g, s) => { for (const l of s.mem.las || []) { const ex = s.E.x + Math.cos(l.a) * 500, ey = s.E.y + Math.sin(l.a) * 500;
+      g.lineCap = 'round';
+      if (l.t <= 45) { g.strokeStyle = `rgba(255,84,112,${.35 + .35 * Math.sin(l.t * .5)})`; g.lineWidth = 1; g.beginPath(); g.moveTo(s.E.x, s.E.y); g.lineTo(ex, ey); g.stroke(); }
+      else { const k = Math.min(1, (l.t - 45) / 6) * Math.min(1, (90 - l.t) / 10);
+        g.strokeStyle = `rgba(255,84,112,${.35 * k})`; g.lineWidth = 16 * k; g.beginPath(); g.moveTo(s.E.x, s.E.y); g.lineTo(ex, ey); g.stroke();
+        g.strokeStyle = `rgba(255,170,190,${.8 * k})`; g.lineWidth = 7 * k; g.stroke();
+        g.strokeStyle = `rgba(255,255,255,${k})`; g.lineWidth = 2.5 * k; g.stroke(); } } },
+    hud: s => ['レーザー ' + (s.mem.las ? s.mem.las.length : 0)] },
+  { s: 'shape', name: '囲い込み', tag: '自機を中心に円形配置',
+    desc: '自機の周りを弾の輪で囲み、一瞬止めてからゆっくり縮めます。1か所だけ空いている出口から抜け出します。',
+    pattern: s => { if (every(s, 120, 110)) { const cx = s.P.x, cy = s.P.y, gp = (s.rand() * 28) | 0;
+      for (let i = 0; i < 28; i++) { if ((i - gp + 28) % 28 < 3) continue; const a = i * 360 / 28;
+        s.fire({ x: cx + Math.cos(a * DEG) * 95, y: cy + Math.sin(a * DEG) * 95, a: a + 180, v: 0, type: 'orb', col: 'purple', margin: 130,
+          upd: (b) => { if (b.age === 40) { b.v = .9; b.col = 'pink'; } } }); } } } },
+  { s: 'shape', name: '組み合わせ（ボス戦風）', tag: 'らせん + 全方位 + 自機狙い',
+    desc: 'らせん、全方位弾、自機狙いの3つを同時に重ねたもの。複雑に見えるボス戦の弾幕も、ここまでの基本パターンの重ね合わせでできています。',
+    pattern: s => { if (every(s, 4)) { const b = s.t * 3.1; for (let k = 0; k < 2; k++) s.fire({ a: b + k * 180, v: 2, type: 'rice', col: 'cyan' }); }
+      if (every(s, 48)) { const o = s.rand() * 360; for (let i = 0; i < 12; i++) s.fire({ a: o + i * 30, v: 1.3, type: 'big', col: 'purple' }); }
+      if (every(s, 26, 13)) { const b = s.aim(); for (let i = -1; i <= 1; i++) s.fire({ a: b + i * 10, v: 3.4, type: 'kunai', col: 'red' }); } } },
+
+  { s: 'engine', name: '当たり判定', tag: '判定 ≪ 見た目',
+    desc: '明るい点が本当の当たり判定です。見た目の弾よりずっと小さく、自機の判定は中心の1点だけ。弾の近くをかすめると「かすり」が増えます。自機は左右に動いているだけで避けていないので、当たることもあります。',
+    judge: true, spriteAlpha: .3,
+    pattern: s => { if (every(s, 5)) { const b = s.t * 2.8; for (let k = 0; k < 3; k++) s.fire({ a: b + k * 120, v: 1.9, type: 'orb', col: 'blue' }); }
+      if (every(s, 20)) s.fire({ a: s.aim(), v: 2.6, type: 'big', col: 'red' }); },
+    drawFront: (g, s) => { g.fillStyle = '#fff'; for (const b of s.bullets) { g.beginPath(); g.arc(b.x, b.y, HB[b.type], 0, Math.PI * 2); g.fill(); }
+      g.strokeStyle = 'rgba(255,216,77,.5)'; g.setLineDash([2, 3]); g.beginPath(); g.arc(s.P.x, s.P.y, 18, 0, Math.PI * 2); g.stroke(); g.setLineDash([]); },
+    hud: s => ['かすり ' + s.grazes, '被弾 ' + s.hits] },
+  { s: 'engine', name: '弾の種類', tag: 'sprite × 回転',
+    desc: '丸弾、小弾、米粒弾、クナイ弾、星弾、大玉。細長い弾は進む向きに合わせて回し、星弾は自転させています。見た目が違っても、動きの計算はすべて同じです。',
+    still: true,
+    pattern: s => { const types = ['orb', 'small', 'rice', 'kunai', 'star', 'big'], cols = ['red', 'cyan', 'green', 'pink', 'yellow', 'purple'];
+      if (every(s, 45)) { const i = (s.t / 45) % 6; s.mem.lab = i; const o = s.t * 7; for (let k = 0; k < 12; k++) s.fire({ a: o + k * 30, v: 1.2, av: .35, avT: 200, type: types[i], col: cols[i] }); } },
+    drawFront: (g, s) => { const names = ['丸弾', '小弾', '米粒弾', 'クナイ弾', '星弾', '大玉']; if (s.mem.lab === undefined) return;
+      g.font = '700 13px "Zen Kaku Gothic New", sans-serif'; g.textAlign = 'center'; g.fillStyle = '#ece8e0'; g.fillText(names[s.mem.lab], W / 2, 26); g.textAlign = 'left'; } },
+  { s: 'engine', name: '大量の弾', tag: 'object pool',
+    desc: '1フレームに16発ずつ撃ち続け、画面に1000発以上を出しています。消えた弾のデータを捨てずに次の弾に使い回す「オブジェクトプール」で、処理を軽く保っています。左下が1フレームの更新にかかった時間です。',
+    pattern: s => { const b = s.t * 1.7; for (let k = 0; k < 8; k++) { s.fire({ a: b + k * 45, v: 1.3, type: 'small', col: 'cyan' }); s.fire({ a: -b * 1.3 + k * 45 + 22, v: 1.7, type: 'small', col: 'pink' }); } },
+    hud: s => ['更新 ' + s.ms.toFixed(2) + ' ms', '再利用待ち ' + s.pool.length] }
+];
+
+/* ---------- build page ---------- */
+const main = document.getElementById('main'), nav = document.getElementById('nav');
+const stages = [];
+ITEMS.forEach((it, i) => { it.seed = 101 + i * 7; });
+for (const sec of SECTIONS) {
+  const a = document.createElement('a'); a.href = '#' + sec.id; a.textContent = sec.title; nav.appendChild(a);
+  const el = document.createElement('section'); el.id = sec.id;
+  el.innerHTML = `<header><div class="eyebrow">${sec.en}</div><h2>${sec.title}</h2><p>${sec.lead}</p></header><div class="grid"></div>`;
+  const grid = el.querySelector('.grid');
+  for (const it of ITEMS.filter(x => x.s === sec.id)) {
+    const card = document.createElement('article'); card.className = 'card';
+    const cv = document.createElement('canvas'); cv.className = 'stage'; cv.width = W * DPR; cv.height = H * DPR;
+    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', it.name + 'の弾幕のアニメーション');
+    const meta = document.createElement('div'); meta.className = 'meta';
+    meta.innerHTML = '<div class="row"><h3></h3><button type="button">最初から</button></div><code></code><p></p>';
+    meta.querySelector('h3').textContent = it.name; meta.querySelector('code').textContent = it.tag; meta.querySelector('p').textContent = it.desc;
+    card.append(cv, meta); grid.appendChild(card);
+    const st = new Stage(cv, it); st.visible = false; stages.push(st);
+    meta.querySelector('button').addEventListener('click', () => { st.reset(); st.draw(); });
+    const toLocal = (e) => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H }; };
+    cv.addEventListener('pointermove', (e) => { st.ptr = toLocal(e); });
+    cv.addEventListener('pointerdown', (e) => { st.ptr = toLocal(e); });
+    cv.addEventListener('pointerleave', () => { st.ptr = null; });
+  }
+  main.appendChild(el);
+}
+
+const io = new IntersectionObserver((ents) => { for (const e of ents) { const st = stages.find(s => s.c === e.target); if (st) st.visible = e.isIntersecting; } }, { rootMargin: '60px' });
+stages.forEach(s => io.observe(s.c));
+
+/* warm-up: advance each stage so it opens mid-pattern, then draw a first frame */
+stages.forEach(s => { for (let i = 0; i < 150; i++) s.step(); s.draw(); });
+
+let playing = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+const playBtn = document.getElementById('play');
+const syncBtn = () => { playBtn.textContent = playing ? '一時停止' : '再生'; playBtn.setAttribute('aria-pressed', String(!playing)); };
+syncBtn();
+playBtn.addEventListener('click', () => { playing = !playing; syncBtn(); });
+document.getElementById('resetAll').addEventListener('click', () => stages.forEach(s => { s.reset(); for (let i = 0; i < 150; i++) s.step(); s.draw(); }));
+
+const STEP = 1000 / 60; let acc = 0, prev = performance.now();
+function loop(now) {
+  const dt = Math.min(100, now - prev); prev = now;
+  if (playing) {
+    acc += dt; let n = 0;
+    while (acc >= STEP && n < 4) { for (const s of stages) if (s.visible) s.step(); acc -= STEP; n++; }
+    if (n === 4) acc = 0;
+  }
+  for (const s of stages) if (s.visible) s.draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+})();
+</script>
+
+<script src="../../assets/js/series.js" data-catalogue="danmaku"></script>
