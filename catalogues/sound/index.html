@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>サウンド表現図鑑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../assets/css/base.css">
+<link rel="stylesheet" href="../../assets/css/series.css">
+<style>.vol { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--muted); } .vol input { accent-color: var(--accent); width: 140px; }</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+<div class="eyebrow">Sound catalogue</div>
+<h1>サウンド表現図鑑</h1>
+<p class="lead">ゲームの「ピコッ」「ドカーン」や、場面に合わせて変わる音楽は、波の形・高さ・音量の変化・響きの組み合わせでできています。この図鑑の音はすべて、録音したファイルを使わずに、ブラウザの中でその場で合成しています。</p>
+<p class="note">音が出ます。最初は音量を控えめにしてください。カードをクリック（タップ）すると鳴り、押している間だけ鳴るカードもあります。左右の違いはヘッドホンだとよく分かります。</p>
+<dl class="gloss">
+  <div><dt>周波数（Hz）</dt><dd>1秒間に波がくり返す回数。大きいほど高い音。人の耳に聞こえるのはおよそ 20Hz〜20000Hz。</dd></div>
+  <div><dt>倍音</dt><dd>基本の高さの2倍・3倍…の周波数の成分。どの倍音がどれだけ含まれるかで音色が決まる。</dd></div>
+  <div><dt>エンベロープ</dt><dd>音が鳴り始めてから消えるまでの、音量や高さの時間変化のこと。</dd></div>
+</dl>
+<div class="series" id="series"></div>
+<div class="controls"><button id="play" type="button" aria-pressed="false">一時停止</button><button id="resetAll" type="button">すべて最初から</button><label class="vol">音量 <input id="vol" type="range" min="0" max="1" step="0.01" value="0.5"></label></div>
+<nav id="nav" aria-label="カテゴリ"></nav>
+</header>
+<main id="main"></main>
+<footer>すべて Web Audio API で音をその場で合成し、Canvas 2D で描いています。音声ファイルは使っていません。</footer>
+</div>
+<script src="../../assets/js/g2d.js"></script>
+<script src="../../assets/js/series.js" data-catalogue="sound"></script>
+<script src="main.js"></script>
+</body>
+</html>
