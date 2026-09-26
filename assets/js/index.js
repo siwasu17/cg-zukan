@@ -61,6 +61,6 @@
     .then(render)
     .catch(() => {
       list.textContent = '';
-      list.appendChild(el('p', 'fail', 'catalogues.json を読み込めませんでした。ファイルを直接開いている場合は、README の手順でローカルサーバーを起動してから開いてください。'));
+      list.appendChild(el('p', 'fail', 'catalogues.json を読み込めませんでした。ファイルを直接開いている場合は、docs/guide.md の手順でローカルサーバーを起動してから開いてください。'));
     });
 })();
