@@ -10,5 +10,10 @@
     "new": "node scripts/new-catalogue.mjs",
     "thumbnail": "node scripts/thumbnail.mjs"
   },
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
 }

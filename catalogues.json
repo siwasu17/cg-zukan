@@ -9,13 +9,13 @@
     { "id": "make", "title": "作る技法", "description": "規則と乱数で世界を作る方法と、限られた色と画素で描くドット絵の技法です。" }
   ],
   "catalogues": [
-    { "id": "material", "title": "球体マテリアル図鑑", "group": "cg", "kind": "3D", "cards": 45, "path": "catalogues/material/",
+    { "id": "material", "title": "球体マテリアル図鑑", "group": "cg", "kind": "3D", "cards": 45, "path": "catalogues/material/", "thumbnail": "catalogues/material/thumbnail.png",
       "description": "同じ球体に、シェーディング・PBR・テクスチャ・プロシージャル・NPRなど45種類の見た目の技法を当てて見比べます。" },
-    { "id": "furfluid", "title": "毛と流体の球体図鑑", "group": "cg", "kind": "3D", "cards": 28, "path": "catalogues/furfluid/",
+    { "id": "furfluid", "title": "毛と流体の球体図鑑", "group": "cg", "kind": "3D", "cards": 28, "path": "catalogues/furfluid/", "thumbnail": "catalogues/furfluid/thumbnail.png",
       "description": "シェル法やマーシュナー法による毛の表現と、さざ波・変形・フローマップ・粒子・ボリュームによる流体の表現。" },
-    { "id": "lighting", "title": "ライティング図鑑", "group": "cg", "kind": "3D", "cards": 22, "path": "catalogues/lighting/",
+    { "id": "lighting", "title": "ライティング図鑑", "group": "cg", "kind": "3D", "cards": 22, "path": "catalogues/lighting/", "thumbnail": "catalogues/lighting/thumbnail.png",
       "description": "光源の種類、影のつけ方、光の性質、照明の組み方を、同じ小さな舞台で見比べます。" },
-    { "id": "post", "title": "ポストエフェクト図鑑", "group": "cg", "kind": "3D", "cards": 21, "path": "catalogues/post/",
+    { "id": "post", "title": "ポストエフェクト図鑑", "group": "cg", "kind": "3D", "cards": 21, "path": "catalogues/post/", "thumbnail": "catalogues/post/thumbnail.png",
       "description": "同じ場面に、ブルーム・被写界深度・アニメ調・ドット絵化・ブラウン管などの仕上げフィルターをかけて比べます。" },
     { "id": "danmaku", "title": "弾幕図鑑", "group": "game", "kind": "2D", "cards": 27, "path": "catalogues/danmaku/", "thumbnail": "catalogues/danmaku/thumbnail.png",
       "description": "自機狙い・回転撃ち・停止弾・誘導弾・レーザーなど、シューティングゲームの弾幕を小さな画面で動かします。" },
