@@ -3,7 +3,7 @@
  *
  * Runtime: assets/js/g3d.js  (window.G3D) on top of three.js r149 (global THREE)
  *
- * G3D.run({ sections, items, minCol, aspect, shadows, rx, ry, spin, setup })
+ * G3D.run({ sections, items, minCol, aspect, shadows, rx, ry, spin, exposure, tilt, drag, parts, setup })
  *   items: [{ s, name, tag, desc, hint?, make(ctx) }]
  *     make(ctx) is called once, the first time the card scrolls into view. Return a "view":
  *       { scene, camera, root?, update?(t, dt, v), render?(ctx, x, y, w, h, v), noSpin? }
@@ -14,6 +14,12 @@
  *   aspect  card aspect ratio, e.g. '4 / 3' (default '1')
  *   shadows true → renderer.shadowMap enabled
  *   rx, ry  initial rotation; spin = auto-rotation speed (rad/s)
+ *   exposure tone-mapping exposure (default 1)
+ *   tilt    allowed up/down rotation [min, max] in radians (default [-.6, .9])
+ *   drag    rotation per dragged pixel [x, y] (default [.01, .006])
+ *   parts   optional [{ id, en, title, short?, lead }]; sections with `part: id` are grouped
+ *           under a big heading, and the nav gets one row per part (label = short || title)
+ *   setup(ctx) called once after the renderer is ready (build shared textures / geometry here)
  */
 (function () {
 const { run } = G3D;
