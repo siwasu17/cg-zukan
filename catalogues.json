@@ -32,6 +32,12 @@
     { "id": "procgen", "title": "自動生成図鑑", "group": "make", "kind": "2D", "cards": 21, "path": "catalogues/procgen/", "thumbnail": "catalogues/procgen/thumbnail.png",
       "description": "ノイズ・地形・川・迷路・洞窟・ダンジョン・波動関数崩壊・名前生成を、作り直しながら見比べます。" },
     { "id": "pixel", "title": "ドット絵・2D技法図鑑", "group": "make", "kind": "2D", "cards": 20, "path": "catalogues/pixel/", "thumbnail": "catalogues/pixel/thumbnail.png",
-      "description": "パレットスワップ、カラーサイクル、ディザ、多重スクロール、モード7風の床などの2D技法。" }
+      "description": "パレットスワップ、カラーサイクル、ディザ、多重スクロール、モード7風の床などの2D技法。" },
+    { "id": "gamemath", "title": "ゲームの数学図鑑", "group": "game", "kind": "2D", "cards": 0, "path": "catalogues/gamemath/",
+      "description": "仮置き" },
+    { "id": "anim3d", "title": "3Dアニメーション図鑑", "group": "cg", "kind": "3D", "cards": 0, "path": "catalogues/anim3d/",
+      "description": "仮置き" },
+    { "id": "balance", "title": "確率とゲームバランス図鑑", "group": "game", "kind": "2D", "cards": 0, "path": "catalogues/balance/",
+      "description": "仮置き" }
   ]
 }
