@@ -4,8 +4,8 @@
     "description": "3DCGの質感や光、ゲームの動きや演出と音、自動生成やドット絵の技法を、実際に動く小さな見本で見比べる図鑑シリーズです。"
   },
   "groups": [
-    { "id": "cg", "title": "3DCGの見た目", "description": "材質、毛や水、光、仕上げのフィルター。3Dの画面の見た目を決める技法です。" },
-    { "id": "game", "title": "ゲームの動きと演出", "description": "弾幕、手触り、エフェクト、物理、キャラクターの動き、効果音と音楽。遊んで気持ちいいゲームを作る技法です。" },
+    { "id": "cg", "title": "3DCGの見た目", "description": "材質、毛や水、光、仕上げのフィルター、アニメーション。3Dの画面の見た目と動きを決める技法です。" },
+    { "id": "game", "title": "ゲームの動きと演出", "description": "弾幕、手触り、エフェクト、物理、キャラクターの動き、効果音と音楽、その下で働く数学と確率。遊んで気持ちいいゲームを作る技法です。" },
     { "id": "make", "title": "作る技法", "description": "規則と乱数で世界を作る方法と、限られた色と画素で描くドット絵の技法です。" }
   ],
   "catalogues": [
@@ -17,6 +17,8 @@
       "description": "光源の種類、影のつけ方、光の性質、照明の組み方を、同じ小さな舞台で見比べます。" },
     { "id": "post", "title": "ポストエフェクト図鑑", "group": "cg", "kind": "3D", "cards": 21, "path": "catalogues/post/", "thumbnail": "catalogues/post/thumbnail.png",
       "description": "同じ場面に、ブルーム・被写界深度・アニメ調・ドット絵化・ブラウン管などの仕上げフィルターをかけて比べます。" },
+    { "id": "anim3d", "title": "3Dアニメーション図鑑", "group": "cg", "kind": "3D", "cards": 22, "path": "catalogues/anim3d/", "thumbnail": "catalogues/anim3d/thumbnail.png",
+      "description": "骨とスキニング、ブレンドシェイプ、回転の補間、IK、揺れもの、歩きのブレンドまで。キャラクターや物が動く仕組みを、その場で計算して動く人形や筒で見比べます。" },
     { "id": "danmaku", "title": "弾幕図鑑", "group": "game", "kind": "2D", "cards": 27, "path": "catalogues/danmaku/", "thumbnail": "catalogues/danmaku/thumbnail.png",
       "description": "自機狙い・回転撃ち・停止弾・誘導弾・レーザーなど、シューティングゲームの弾幕を小さな画面で動かします。" },
     { "id": "feel", "title": "ゲームの手触り図鑑", "group": "game", "kind": "2D", "cards": 18, "path": "catalogues/feel/", "thumbnail": "catalogues/feel/thumbnail.png",
@@ -29,15 +31,13 @@
       "description": "追う・逃げる・群れ・A*などの経路探索・状態機械まで、キャラクターを動かす基本の規則。" },
     { "id": "sound", "title": "サウンド表現図鑑", "group": "game", "kind": "2D", "cards": 29, "path": "catalogues/sound/", "thumbnail": "catalogues/sound/thumbnail.png",
       "description": "波形・倍音・フィルター・FM合成から、ジャンプやコインの効果音、定位・ドップラー・残響、盛り上がりで変わるBGMまで。すべてその場で合成して鳴らします。" },
+    { "id": "gamemath", "title": "ゲームの数学図鑑", "group": "game", "kind": "2D", "cards": 24, "path": "catalogues/gamemath/", "thumbnail": "catalogues/gamemath/thumbnail.png",
+      "description": "位置の差・内積・外積・atan2・回転行列から、lerp やベジェ曲線、円・箱・回った箱の当たり判定まで。ゲームの動きの下で働く数学を、矢印と数字で見ながら動かせます。" },
+    { "id": "balance", "title": "確率とゲームバランス図鑑", "group": "game", "kind": "2D", "cards": 22, "path": "catalogues/balance/", "thumbnail": "catalogues/balance/thumbnail.png",
+      "description": "乱数のばらつき、シャッフルバッグ、ガチャの天井、ダメージ計算式、ラバーバンド。その場で何万回も試して、確率の本当の姿とバランス調整の工夫をグラフで見せます。" },
     { "id": "procgen", "title": "自動生成図鑑", "group": "make", "kind": "2D", "cards": 21, "path": "catalogues/procgen/", "thumbnail": "catalogues/procgen/thumbnail.png",
       "description": "ノイズ・地形・川・迷路・洞窟・ダンジョン・波動関数崩壊・名前生成を、作り直しながら見比べます。" },
     { "id": "pixel", "title": "ドット絵・2D技法図鑑", "group": "make", "kind": "2D", "cards": 20, "path": "catalogues/pixel/", "thumbnail": "catalogues/pixel/thumbnail.png",
-      "description": "パレットスワップ、カラーサイクル、ディザ、多重スクロール、モード7風の床などの2D技法。" },
-    { "id": "gamemath", "title": "ゲームの数学図鑑", "group": "game", "kind": "2D", "cards": 0, "path": "catalogues/gamemath/",
-      "description": "仮置き" },
-    { "id": "anim3d", "title": "3Dアニメーション図鑑", "group": "cg", "kind": "3D", "cards": 0, "path": "catalogues/anim3d/",
-      "description": "仮置き" },
-    { "id": "balance", "title": "確率とゲームバランス図鑑", "group": "game", "kind": "2D", "cards": 0, "path": "catalogues/balance/",
-      "description": "仮置き" }
+      "description": "パレットスワップ、カラーサイクル、ディザ、多重スクロール、モード7風の床などの2D技法。" }
   ]
 }
