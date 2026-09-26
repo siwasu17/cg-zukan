@@ -151,7 +151,7 @@ const ITEMS = [
     draw: (g, s) => { const [A, B] = s.P, d = sub(B, A), K = V(B.x, A.y), u = norm(d);
       line(g, A, K, COL.cyan, 1.2, [3, 3]); line(g, K, B, COL.pink, 1.2, [3, 3]);
       txt(g, 'dx ' + f(d.x), (A.x + B.x) / 2, A.y + (d.y < 0 ? 15 : -6), { align: 'center', color: COL.cyan });
-      txt(g, 'dy ' + f(d.y), B.x + (d.x > 0 ? 6 : -6), (A.y + B.y) / 2, { color: COL.pink, align: d.x > 0 ? 'left' : 'right' });
+      txt(g, 'dy ' + f(d.y), B.x + (d.x > 0 ? -6 : 6), (A.y + B.y) / 2, { color: COL.pink, align: d.x > 0 ? 'right' : 'left' });
       for (const b of s.B) circ(g, b.p, 2.6, COL.yellow);
       arrow(g, A, B, COL.yellow, 2.2, 10);
       g.save(); g.translate(A.x, A.y); g.rotate(Math.atan2(u.y, u.x)); g.fillStyle = '#7fd6ff'; g.fillRect(0, -3.5, 18, 7); g.restore();
@@ -288,7 +288,7 @@ const ITEMS = [
       let t = 0, a = T[0], i = 0, sw = 0; const hist = [];
       return {
         act() { t = 0; a = T[0]; i = 0; sw = 0; hist.length = 0; },
-        step() { if (t % 90 === 0 && t > 0) { i = (i + 1) % T.length; sw = 0; }
+        step() { if (t % 90 === 20) { i = (i + 1) % T.length; sw = 0; }
           const da = (fix ? angDiff(a, T[i]) : T[i] - a) * .08; a += da; sw += Math.abs(da);
           hist.push(a); if (hist.length > 36) hist.shift(); t++; },
         draw(g) { const c = V(120, 66), R = 42;
@@ -340,7 +340,7 @@ const ITEMS = [
       txt(g, '太陽', b.sun.x, b.sun.y + 26, { align: 'center' }); txt(g, '月', b.moon.x + 7, b.moon.y - 6, { color: COL.ink }); },
     hud: (s) => { const m = bodies(s.t).moon; return ['月のローカル (24, 0)', '月のワールド (' + f(m.x) + ', ' + f(m.y) + ')']; } }),
 
-  card({ s: 'angle', name: '相手から見た位置（ローカル座標）', tag: 'local = R(−θ) · (P − 位置)',
+  card({ s: 'angle', name: '相手から見た位置', tag: 'local = R(−θ) · (P − 位置)',
     desc: '画面全体の座標（ワールド座標）で表した点 P を、戦車から見た「前にいくつ、右にいくつ」に直します。まず戦車の位置を引き、次に戦車の向きのぶんだけ逆に回すだけ。前後左右がわかれば「後ろからの攻撃だけよく効く」といった判定も簡単です。',
     hint: 'P をドラッグ', pts: [[190, 60]], free: 0,
     auto: (s) => { s.P[0].x = 120 + 92 * Math.cos(s.t * .006 + 1); s.P[0].y = 120 + 92 * Math.sin(s.t * .0095); },
@@ -404,7 +404,7 @@ const ITEMS = [
       txt(g, '0', x0, y + 18, { align: 'center' }); txt(g, '1', x1, y + 18, { align: 'center' }); },
     hud: (s) => { const P = vlerp(s.P[0], s.P[1], s.tt); return ['P = (' + f(P.x) + ', ' + f(P.y) + ')', '色・大きさも同じ t で混ぜる']; } }),
 
-  pair({ s: 'interp', name: 'フレームレートに左右されない追従', tag: '× 0.1 → × (1 − e^(−k·dt))',
+  pair({ s: 'interp', name: 'fps に左右されない追従', tag: '× 0.1 → × (1 − e^(−k·dt))',
     desc: '「毎フレーム、残りの距離の1割だけ近づく」追従は手軽ですが、1秒に60回と15回では呼ばれる回数が違うので、遅い環境では4倍ゆっくりになります（上）。下は経過時間 dt を使い、1 − e^(−k·dt) の割合で近づくので、60fps でも 15fps でも同じ速さで追いつきます。',
     scen: (fix) => {
       const k = 6.32; let t = 0, tx = 40; const x = [40, 40], hist = [[], []];
@@ -551,15 +551,15 @@ const ITEMS = [
       const hit = nsep === 0; s.nsep = nsep;
       poly(g, A, hit ? 'rgba(255,84,112,.2)' : 'rgba(91,140,255,.2)', hit ? COL.red : COL.blue, 2);
       poly(g, B, hit ? 'rgba(255,84,112,.2)' : 'rgba(255,159,67,.2)', hit ? COL.red : COL.orange, 2);
-      const O = V(120, 120), ax = best.ax; let pp = V(-ax.y, ax.x); if (pp.y < 0) pp = mul(pp, -1);
-      const base = add(O, mul(pp, 92)), at = (v, off) => add(add(base, mul(ax, v - dot(O, ax))), mul(pp, off));
+      const O = V(120, 106), ax = best.ax; let pp = V(-ax.y, ax.x); if (pp.y < 0) pp = mul(pp, -1);
+      const base = add(O, mul(pp, 80)), at = (v, off) => add(add(base, mul(ax, v - dot(O, ax))), mul(pp, off));
       line(g, sub(base, mul(ax, 200)), add(base, mul(ax, 200)), 'rgba(255,255,255,.3)', 1);
       const guide = (pts, [lo, hi], off) => { for (const v of [lo, hi]) { const p = pts.reduce((m, q) => Math.abs(dot(q, ax) - v) < Math.abs(dot(m, ax) - v) ? q : m); line(g, p, at(v, off), 'rgba(255,255,255,.14)', 1, [2, 3]); } };
       guide(A, best.a, -3); guide(B, best.b, 3);
       line(g, at(best.a[0], -3), at(best.a[1], -3), COL.blue, 5); line(g, at(best.b[0], 3), at(best.b[1], 3), COL.orange, 5);
       const lo = Math.max(best.a[0], best.b[0]), hi = Math.min(best.a[1], best.b[1]);
       line(g, at(Math.min(lo, hi), 0), at(Math.max(lo, hi), 0), hit ? COL.red : COL.green, 3);
-      const lp = at((lo + hi) / 2, 16); txt(g, hit ? '重なり' : 'すきま', lp.x, lp.y + 4, { align: 'center', color: hit ? COL.red : COL.green, weight: 700, bg: 'rgba(13,17,34,.8)' });
+      const lp = at((lo + hi) / 2, -14); txt(g, hit ? '重なり' : 'すきま', lp.x, lp.y + 4, { align: 'center', color: hit ? COL.red : COL.green, weight: 700, bg: 'rgba(13,17,34,.8)' });
       handle(g, s.P[0], COL.ink, null, { hollow: true }); },
     hud: (s) => ['すきまのある軸 ' + s.nsep + ' / 4 本', s.nsep ? '→ 当たっていない' : '→ 当たり'] }),
 
@@ -578,9 +578,9 @@ const ITEMS = [
       handle(g, A, COL.cyan, 'A'); handle(g, B, COL.cyan, 'B'); handle(g, C, COL.orange, 'C'); handle(g, D, COL.orange, 'D'); },
     hud: (s) => s.par ? ['平行（交わらない）'] : ['t = ' + f(s.tv, 2) + '   u = ' + f(s.uv, 2), s.ok ? '→ 交わる' : '→ 延長線の上で交わるだけ'] }),
 
-  card({ s: 'hit', name: 'レイキャストと跳ね返るレーザー', tag: 'いちばん小さい t を選ぶ + 反射',
+  card({ s: 'hit', name: 'レイキャストと反射', tag: 'いちばん小さい t を選ぶ + 反射',
     desc: '光線（レイ）が最初にぶつかる場所を求めます。円とは2次方程式、線分とは外積の式で「どれだけ進んだら当たるか（t）」を出し、一番小さい t を選びます。当たった点の法線（緑）と反射ベクトルで向きを変えれば、跳ね返るレーザーになります。',
-    hint: '発射点とねらう先をドラッグ', pts: [[22, 214], [150, 60]], free: 1,
+    hint: '発射点とねらう先をドラッグ', pts: [[30, 186], [150, 60]], free: 1,
     auto: (s) => { s.P[1].x = 150 + 70 * Math.cos(s.t * .009); s.P[1].y = 90 + 60 * Math.sin(s.t * .013); },
     draw: (g, s) => {
       const circles = [[104, 82, 22], [176, 150, 28], [74, 160, 16]], segs = [[V(150, 34), V(214, 70)], [V(2, 2), V(238, 2)], [V(238, 2), V(238, 238)], [V(238, 238), V(2, 238)], [V(2, 238), V(2, 2)]];

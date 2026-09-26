@@ -64,15 +64,15 @@ function stage(ctx, o = {}) {
   const camera = new THREE.PerspectiveCamera(o.fov || 32, 1, .1, 50);
   camera.position.set(...(o.cam || [0, 1.25, 5.2])); camera.lookAt(...(o.look || [0, .85, 0])); scene.add(camera);
   const root = new THREE.Group(); scene.add(root);
-  const d = new THREE.DirectionalLight(0xffffff, 1.5); d.position.set(-2, 4, 3); scene.add(d);
-  scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x3a3632, .7));
+  const d = new THREE.DirectionalLight(0xffffff, 1.35); d.position.set(-2, 4, 3); scene.add(d);
+  scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x2a2622, .35));
   const S = { scene, camera, root };
-  if (o.floor !== false) { S.floor = mesh(new THREE.CircleGeometry(o.floor || 2.2, 64), M(0x5a5f69, { roughness: .95 }), root); S.floor.rotation.x = -PI / 2; }
+  if (o.floor !== false) { S.floor = mesh(new THREE.CircleGeometry(o.floor || 2.2, 64), M(0x30333a, { roughness: .95 }), root); S.floor.rotation.x = -PI / 2; }
   return S;
 }
 /* stripes on the floor so that sliding and walking speed can be seen */
 function stripes(ctx, floorMesh, worldW) {
-  const t = ctx.tex(64, 8, (g) => { g.fillStyle = '#5f646e'; g.fillRect(0, 0, 64, 8); g.fillStyle = '#4a4e57'; g.fillRect(0, 0, 32, 8); });
+  const t = ctx.tex(64, 8, (g) => { g.fillStyle = '#4a4e57'; g.fillRect(0, 0, 64, 8); g.fillStyle = '#383b42'; g.fillRect(0, 0, 32, 8); });
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(worldW / .5, 1); floorMesh.material.map = t; floorMesh.material.needsUpdate = true;
   return (dist) => { t.offset.x = (t.offset.x + dist / .5) % 1; };
 }
@@ -95,12 +95,12 @@ function ccd(P, T, iters, maxAng) {
     for (let j = i + 1; j <= n; j++) P[j].sub(P[i]).applyQuaternion(_q).add(P[i]);
   }
 }
-function fabrik(P, L, base, T, iters) {
+function fabrik(P, L, base, T, iters, minY = -1e9) {
   const n = P.length - 1, total = L.reduce((s, x) => s + x, 0);
   if (base.distanceTo(T) >= total) { P[0].copy(base); for (let i = 0; i < n; i++) P[i + 1].copy(P[i]).addScaledVector(_a.subVectors(T, P[i]).normalize(), L[i]); return; }
   for (let k = 0; k < iters; k++) {
-    P[n].copy(T); for (let i = n - 1; i >= 0; i--) P[i].copy(P[i + 1]).addScaledVector(_a.subVectors(P[i], P[i + 1]).normalize(), L[i]);
-    P[0].copy(base); for (let i = 0; i < n; i++) P[i + 1].copy(P[i]).addScaledVector(_a.subVectors(P[i + 1], P[i]).normalize(), L[i]);
+    P[n].copy(T); for (let i = n - 1; i >= 0; i--) { _a.subVectors(P[i], P[i + 1]).normalize(); P[i].copy(P[i + 1]).addScaledVector(_a, L[i]); }
+    P[0].copy(base); for (let i = 0; i < n; i++) { if (P[i + 1].y < minY) P[i + 1].y = minY; _a.subVectors(P[i + 1], P[i]).normalize(); P[i + 1].copy(P[i]).addScaledVector(_a, L[i]); }
   }
 }
 
@@ -134,11 +134,11 @@ function gait(ph, P, J) {
   }
 }
 function stand(J, o = {}) {
-  J.pelvis.set(o.px || 0, .84 + (o.py || 0), o.pz || 0); J.lean = o.lean || .02; J.breath = o.breath || 0; upper(J);
+  J.pelvis.set(o.px || 0, .92 + (o.py || 0), o.pz || 0); J.lean = o.lean || .02; J.breath = o.breath || 0; upper(J);
   for (let i = 0; i < 2; i++) { _f.set(.01, ANK, SIDE[i] * .11); leg(J, i, _f); arm(J, i, .06 + (o.arm || 0) * SIDE[i], .18 + (o.elbow || 0)); }
 }
-const WALK = { T: 1.1, S: .56, duty: .6, lift: .13, hip: .84, bob: .025, lean: .05, arm: .35, armFwd: 0, elbow: .25 };
-const RUN = { T: .68, S: 1.0, duty: .36, lift: .3, hip: .8, bob: -.04, lean: .22, arm: .75, armFwd: .15, elbow: 1.3 };
+const WALK = { T: 1.1, S: .56, duty: .6, lift: .13, hip: .93, bob: .025, lean: .05, arm: .35, armFwd: 0, elbow: .25 };
+const RUN = { T: .68, S: 1.0, duty: .36, lift: .3, hip: .9, bob: -.04, lean: .22, arm: .75, armFwd: .15, elbow: 1.3 };
 const speed = (P) => P.S / (P.duty * P.T);
 function mixP(a, b, w, out = {}) { for (const k in a) out[k] = lerp(a[k], b[k], w); return out; }
 
@@ -168,9 +168,9 @@ function Figure(parent, o = {}) {
 }
 
 /* ---------- skinned tube: n bones along +y ---------- */
-function boneViz(bone, len, color = 0xffd24a) {
-  const m = mesh(G().cone, OV(color, .9), bone, 10); m.scale.set(.05, len, .05);
-  ball(bone, .036, OV(color), 11);
+function boneViz(bone, len, color = 0xffb800) {
+  const m = mesh(G().cone, OV(color), bone, 10); m.scale.set(.055, len, .055);
+  ball(bone, .04, OV(0xffffff), 11);
 }
 function skinTube(o) {
   const seg = o.L / o.n, geo = new THREE.CylinderGeometry(o.r, o.r, o.L, o.rad || 32, o.hs || 48, false); geo.translate(0, o.L / 2, 0);
@@ -239,8 +239,8 @@ const ITEMS = [
     make: (ctx) => {
       const S = stage(ctx, { cam: [0, 1.3, 5], look: [0, .8, 0] });
       const col = (y, a, w) => [lerp(1, .25, w), lerp(.38, .5, w), lerp(.28, 1, w)];
-      const tubes = [.02, .9].map((w, i) => { const T = skinTube({ n: 2, L: 1.6, r: .17, w, hs: 64, color: col }); T.mesh.position.x = i ? .6 : -.6; S.root.add(T.mesh); return T; });
-      S.update = (t) => { const a = -1.7 * hold(t, 6); tubes.forEach(T => { T.bones[1].rotation.z = a; }); };
+      const tubes = [.02, .9].map((w, i) => { const T = skinTube({ n: 2, L: 1.6, r: .17, w, hs: 64, color: col }); T.mesh.position.x = i ? .45 : -.75; S.root.add(T.mesh); return T; });
+      S.update = (t) => { const a = -1.5 * hold(t, 6); tubes.forEach(T => { T.bones[1].rotation.z = a; }); };
       return S;
     } },
   { s: 'rig', name: 'ねじれてつぶれる関節', tag: 'キャンディラッパー現象', hint: '左：骨2本でねじる　右：ねじりを骨4つに分ける',
@@ -328,11 +328,11 @@ const ITEMS = [
   { s: 'rot', name: 'オイラー角とクォータニオン', tag: 'Euler の補間 vs slerp', hint: '左（橙）：オイラー角を補間　右（青緑）：クォータニオンで補間',
     desc: 'どちらも同じ向きから、半透明で示した同じ向きまで回しています。X・Y・Zの3つの角度（オイラー角）をそれぞれ別々に補間すると、左のように大きくひっくり返る遠回りになります。回転を1つのまとまり（クォータニオン）として補間すると、右のように一番近い道筋でまっすぐ回ります。線は機首の通り道です。',
     make: (ctx) => {
-      const S = stage(ctx, { cam: [0, 1.5, 5.2], look: [0, .75, 0], floor: false });
+      const S = stage(ctx, { cam: [0, 1.3, 4.1], look: [0, .8, 0], floor: false });
       const qA = new THREE.Quaternion(), eB = new THREE.Euler(PI, .6, PI), qB = new THREE.Quaternion().setFromEuler(eB);
       const sides = [[-.85, 0xff9a4a], [.85, 0x4ad6c0]].map(([x, c], k) => {
         const piv = new THREE.Group(); piv.position.set(x, .8, 0); S.root.add(piv);
-        const g = glider(c); piv.add(g); const gh = glider(c, .22); gh.quaternion.copy(qB); piv.add(gh);
+        const g = glider(c); piv.add(g); const gh = glider(c, .25); gh.quaternion.copy(qB); piv.add(gh);
         const pts = []; for (let i = 0; i <= 80; i++) { const s = i / 80, q = new THREE.Quaternion(); if (k) q.slerpQuaternions(qA, qB, s); else q.setFromEuler(new THREE.Euler(PI * s, .6 * s, PI * s)); pts.push(V(0, 0, .53).applyQuaternion(q)); }
         line(piv, pts, c, .9); return g;
       });
@@ -378,10 +378,10 @@ const ITEMS = [
     make: (ctx) => {
       const S = stage(ctx, { cam: [0, 0, 4.4], look: [0, 0, 0], floor: false }); S.root = null;
       const grp = new THREE.Group(); S.scene.add(grp);
-      const times = [0, 1, 2, 3, 4], vals = [0, .5, .1, .42, 0], X0 = -1.25, XW = 2.5, DUR = 4;
+      const times = [0, 1, 2, 3, 4], vals = [0, .45, .1, .38, 0], X0 = -1.1, XW = 2.2, DUR = 4;
       const lanes = [[THREE.InterpolateDiscrete, 0xff8a5c], [THREE.InterpolateLinear, 0x5cc8ff], [THREE.InterpolateSmooth, 0x8ee07a]];
       const players = lanes.map(([mode, col], k) => {
-        const y0 = .58 - k * .78;
+        const y0 = .42 - k * .76;
         line(grp, [V(X0, y0, 0), V(X0 + XW, y0, 0)], 0x8a90a0, .3);
         const track = new THREE.NumberKeyframeTrack('.position[y]', times, vals.map(v => v + y0), mode);
         const ip = track.createInterpolant(); ip.settings = { endingStart: THREE.WrapAroundEnding, endingEnd: THREE.WrapAroundEnding };
@@ -431,18 +431,18 @@ const ITEMS = [
   { s: 'ik', name: 'FABRIK', tag: 'FABRIK · 前後に引っぱる',
     desc: '3本の触手が同じ赤い玉を追いかけています。まず先端を目標に置き、骨の長さを保ったまま根元のほうへ順に引っぱり、次に根元を元の場所に戻して先端のほうへ引っぱり直す、をくり返します（FABRIK）。角度の計算がいらず速いので、ゲームでよく使われます。',
     make: (ctx) => {
-      const S = stage(ctx, { cam: [0, 1.6, 5.2], look: [0, .8, 0] }), R = S.root, n = 7, L = new Array(n).fill(.2);
+      const S = stage(ctx, { cam: [0, 1.6, 5.2], look: [0, .8, 0] }), R = S.root, n = 7, L = new Array(n).fill(.24);
       const cols = [0x6fb2ff, 0x8ee07a, 0xffb45c];
       const arms = cols.map((c, k) => {
         const a = k / 3 * TAU + .3, base = V(.85 * Math.cos(a), .06, .85 * Math.sin(a));
         mesh(new THREE.CylinderGeometry(.13, .16, .08, 20), M(0x3d4250), R).position.set(base.x, .04, base.z);
-        const P = []; for (let i = 0; i <= n; i++) P.push(V(base.x, .06 + i * .2, base.z));
+        const P = []; for (let i = 0; i <= n; i++) P.push(V(base.x * (1 - i * .08), .06 + i * .2, base.z * (1 - i * .08)));
         return { base, P, ch: Chain(R, n, { r: (i) => .055 * (1 - i / 9), jr: (i) => .06 * (1 - i / 10), color: c }) };
       });
       const tgt = ball(R, .075, M(0xff4a4a, { emissive: 0xff2020, emissiveIntensity: .5 })), T = V();
       S.update = (t) => {
-        T.set(.55 * Math.sin(t * .9), .95 + .35 * Math.sin(t * 1.3), .55 * Math.cos(t * .7)); tgt.position.copy(T);
-        for (const a of arms) { for (let i = 1; i < n; i++) a.P[i].y += .015; fabrik(a.P, L, a.base, T, 4); a.ch.set(a.P); }
+        T.set(.5 * Math.sin(t * .9), 1.05 + .3 * Math.sin(t * 1.3), .5 * Math.cos(t * .7)); tgt.position.copy(T);
+        for (const a of arms) { for (let i = 1; i < n; i++) a.P[i].y += .04; fabrik(a.P, L, a.base, T, 3, .12); a.ch.set(a.P); }
       };
       return S;
     } },
@@ -476,7 +476,7 @@ const ITEMS = [
   { s: 'ik', name: '視線を向ける', tag: 'LookAt · 首と目',
     desc: 'オレンジの玉を目で追っています。目は玉のほうへまっすぐ向けますが、首は回せる角度に上限をつけ、少し遅れてゆっくりついていくようにしました。体も首の半分くらいだけ一緒にひねります。目・首・体で動きを分けると、人形っぽさが消えて自然に見えます。',
     make: (ctx) => {
-      const S = stage(ctx, { cam: [0, 1.45, 4.6], look: [0, 1.05, 0], floor: false }), R = S.root;
+      const S = stage(ctx, { cam: [0, 1.45, 5.4], look: [0, 1.1, 0], floor: false }), R = S.root;
       const body = new THREE.Group(); R.add(body);
       const torso = mesh(new THREE.CapsuleGeometry(.26, .3, 4, 16), M(0x5b8fd6), body); torso.position.y = .55; torso.scale.z = .75;
       mesh(new THREE.CylinderGeometry(.08, .09, .25, 12), M(0xeadfcf), body).position.y = 1.02;
@@ -487,7 +487,7 @@ const ITEMS = [
       const tgt = ball(R, .065, M(0xffa53a, { emissive: 0xff8a20, emissiveIntensity: .6 })), T = V(), W = V(), E = V();
       const sight = Seg(R, 0xffa53a, .35); let yaw = 0, pitch = 0;
       S.update = (t, dt) => {
-        T.set(1.3 * Math.sin(t * .7), 1.3 + .55 * Math.sin(t * 1.13), .9 + .4 * Math.cos(t * .5)); tgt.position.copy(T);
+        T.set(.95 * Math.sin(t * .7), 1.3 + .5 * Math.sin(t * 1.13), .9 + .4 * Math.cos(t * .5)); tgt.position.copy(T);
         const dx = T.x, dy = T.y - 1.35, dz = T.z, k = 1 - Math.exp(-dt * 3.5);
         const dyaw = clamp(Math.atan2(dx, dz), -.9, .9), dpitch = clamp(-Math.atan2(dy, Math.hypot(dx, dz)), -.45, .45);
         yaw = lerp(yaw, dyaw, k); pitch = lerp(pitch, dpitch, k);
@@ -601,7 +601,7 @@ const ITEMS = [
       S.update = (t, dt) => {
         ph = (ph + dt / WALK.T) % 1; gait(ph, WALK, J);
         const s = J.sh[1], w = .55 * Math.sin(t * 7);
-        J.el[1].copy(s).addScaledVector(dir.set(.15, .55, .75).normalize(), .29);
+        J.el[1].copy(s).addScaledVector(dir.set(.1, .85, .45).normalize(), .29);
         J.ha[1].copy(J.el[1]).addScaledVector(dir.set(.12, Math.cos(w), Math.sin(w)).normalize(), .27);
         F.pose(); scroll(speed(WALK) * dt);
       };
@@ -610,7 +610,7 @@ const ITEMS = [
   { s: 'blend', name: 'ルートモーション', tag: 'root motion vs その場歩き', hint: '手前：足の動きどおりに進む　奥：速すぎて足がすべる',
     desc: '2人とも同じ歩きの動きですが、進む速さの決め方が違います。手前は、足が地面をけった分だけ体を前へ進めるので（ルートモーション）、足あとがその場にとどまります。奥は、その場歩きの動きを別に決めた速さで動かしているので、速さが合わず足が地面をすべり、足あとが長くのびてしまいます。',
     make: (ctx) => {
-      const S = stage(ctx, { cam: [0, 1.5, 5.8], look: [0, .6, 0], fov: 36, floor: false }), R = S.root;
+      const S = stage(ctx, { cam: [0, 1.7, 6.2], look: [0, .6, 0], fov: 36, floor: false }), R = new THREE.Group(); R.rotation.y = .25; S.root.add(R);
       const fl = mesh(new THREE.PlaneGeometry(4.6, 2.2), M(0x5a5f69, { roughness: .95 }), R); fl.rotation.x = -PI / 2; stripes(ctx, fl, 4.6);
       const v = speed(WALK);
       const mk = (z, mul, c, torso) => { const F = Figure(R, { torso }); F.g.position.z = z;
@@ -620,7 +620,7 @@ const ITEMS = [
       const ws = [mk(-.55, 1.9, 0xff6a3a, 0x8d96a8), mk(.55, 1, 0x1c1f26, 0x5b8fd6)];
       S.update = (t, dt) => {
         for (const w of ws) {
-          w.ph = (w.ph + dt / WALK.T) % 1; w.x += v * w.mul * dt; let wrap = false; if (w.x > 2.1) { w.x -= 4.2; wrap = true; }
+          w.ph = (w.ph + dt / WALK.T) % 1; w.x += v * w.mul * dt; let wrap = false; if (w.x > 2.1) { w.x -= 4.2; wrap = true; for (const m of w.marks) m.scale.x = .001; }
           w.F.g.position.x = w.x; gait(w.ph, WALK, w.F.J); w.F.pose();
           for (let i = 0; i < 2; i++) {
             const f = (w.ph + i * .5) % 1, on = f < WALK.duty, fx = w.x + w.F.J.ankle[i].x + .06, m = w.marks[i];

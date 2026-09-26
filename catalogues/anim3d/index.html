@@ -16,13 +16,19 @@
 <header class="top">
 <div class="eyebrow">3D animation catalogue</div>
 <h1>3Dアニメーション図鑑</h1>
-<p class="lead">仮置き</p>
-<p class="note">ドラッグ（またはフォーカスして矢印キー）で回せます。</p>
+<p class="lead">ゲームや映画の3Dキャラクターは、どうやって動いているのでしょう。この図鑑では、骨を入れて表面を曲げる仕組みから、回転のなめらかなつなぎ方、手足を目標に届かせる計算、揺れやしなりのような細かい動き、いくつもの動きの混ぜ方までを、小さな人形や筒で見比べます。モデルのファイルは使わず、形も動きもすべてその場で計算して作っています。</p>
+<p class="note">ドラッグ（またはフォーカスして矢印キー）で回せます。見比べやすさのため、自動で回らないカードもあります。</p>
+<dl class="gloss">
+  <div><dt>ボーン（骨）</dt><dd>形の中に入れる、目に見えない骨組み。親子につながっていて、骨を回すと、ついている表面も一緒に動く。</dd></div>
+  <div><dt>キーフレーム</dt><dd>「この時刻にこの姿勢」と決めた印。キーとキーの間は、コンピューターが計算で埋める（補間）。</dd></div>
+  <div><dt>IK</dt><dd>インバースキネマティクス。手や足の先を置きたい位置から、逆に関節の角度を計算する方法。</dd></div>
+  <div><dt>クォータニオン</dt><dd>回転を4つの数で表す方法。2つの向きの間を、遠回りせずなめらかにつなげる。</dd></div>
+</dl>
 <div class="series" id="series"></div>
 <nav id="nav" aria-label="カテゴリ"></nav>
 </header>
 <main id="main"></main>
-<footer>three.js r149 でリアルタイムに描画しています。</footer>
+<footer>three.js r149 でリアルタイムに描画しています。形・骨・動きはすべてプログラムで作っています。</footer>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
 <script src="../../assets/js/g3d.js"></script>

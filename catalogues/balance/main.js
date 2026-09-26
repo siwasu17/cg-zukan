@@ -110,7 +110,7 @@ const uniform = card({
       label(g, String(i), x0 + (i + .5) * bw, 220, { size: 10, mono: true, align: 'center', color: COL.muted, weight: 500 });
     }
     line(g, x0, y1 - ideal, x1, y1 - ideal, COL.accent, 1.2, [4, 3]);
-    small(g, '理想の高さ', x1, y1 - ideal - 5, { align: 'right', color: COL.accent });
+    label(g, '理想の高さ', x1, y1 - ideal - 5, { size: 9.5, weight: 500, align: 'right', color: COL.accent, bg: 'rgba(13,17,34,.85)' });
   },
   hud(st) { const e = st.n / 10; let d = 0; for (const c of st.c) d = Math.max(d, Math.abs(c - e) / e); return ['いちばん大きいずれ ±' + (st.n ? pct(d) : '—')]; }
 });
@@ -174,7 +174,7 @@ const streak = card({
     const pts = []; for (let i = 1; i <= 59; i++) pts.push([x0 + (i - .5) * bw, y1 - Math.min(1, p * Math.pow(1 - p, i - 1) / mx) * (y1 - y0)]);
     poly(g, pts, COL.accent, 1.2);
     const bx = x0 + N * bw; line(g, bx, y0 + 4, bx, y1, 'rgba(255,84,112,.7)', 1, [3, 3]);
-    small(g, N + '回外れ →', bx + 3, y1 - 4, { color: COL.red, size: 9 });
+    small(g, N + '回外れ →', bx + 3, y0 + 12, { color: COL.red, size: 9 });
     const tx = 226;
     small(g, N + '回続けて外れた人', tx, 86, { align: 'right', color: COL.ink, size: 10 });
     label(g, st.n ? pct(st.over / st.n) : '—', tx, 110, { size: 22, align: 'right', color: COL.red, mono: true, weight: 500 });
@@ -229,7 +229,7 @@ const lln = card({
     const x0 = 34, x1 = 226, y0 = 32, y1 = 200, L = Math.log10(3000);
     const X = n => x0 + Math.log10(n) / L * (x1 - x0), Y = v => y1 - v * (y1 - y0);
     small(g, '表が出た割合', 8, 20, { color: COL.ink, size: 10 });
-    g.fillStyle = 'rgba(240,165,74,.14)'; g.beginPath();
+    g.fillStyle = 'rgba(240,165,74,.22)'; g.beginPath();
     for (let i = 0; i <= 60; i++) { const n = Math.pow(3000, i / 60); g.lineTo(X(n), Y(Math.min(1, .5 + 1 / Math.sqrt(n)))); }
     for (let i = 60; i >= 0; i--) { const n = Math.pow(3000, i / 60); g.lineTo(X(n), Y(Math.max(0, .5 - 1 / Math.sqrt(n)))); }
     g.fill();
@@ -238,7 +238,6 @@ const lln = card({
     st.P.forEach((P, i) => { const c = `hsla(${(i * 47) % 360},80%,68%,.75)`; poly(g, P.pts.map(([n, v]) => [X(n), Y(v)]), c, 1.1); const q = P.pts[P.pts.length - 1]; if (q) dot(g, X(q[0]), Y(q[1]), 1.8, c); });
     for (const [v, s] of [[0, '0%'], [.5, '50%'], [1, '100%']]) small(g, s, x0 - 4, Y(v) + 3, { align: 'right', mono: true });
     for (const n of [1, 10, 100, 1000]) small(g, String(n), X(n), 214, { align: 'center', mono: true });
-    small(g, '回', x1, 214, { align: 'right' });
   },
   hud(st) { let d = 0; for (const P of st.P) if (P.n) d = Math.max(d, Math.abs(P.h / P.n - .5)); return ['投げた回数 ' + num(st.N), 'いちばん外れた人 50% ± ' + pct(d)]; }
 });
@@ -247,11 +246,12 @@ const lln = card({
    2. 偏りを抑える工夫
    ====================================================================== */
 const PIECE = [COL.cyan, COL.yellow, COL.purple, COL.green, COL.red, COL.blue, COL.orange];
-function histPanel(g, arr, n, mx, col, labs) {
+function histPanel(g, arr, n, mx, col, cap, labs) {
   const x0 = 8, x1 = 232, y0 = 50, y1 = 104;
   g.fillStyle = AXIS; g.fillRect(x0, y1, x1 - x0, 1);
   bars(g, x0, y0, x1 - x0, y1 - y0, arr.map(c => n ? c / n : 0), mx, col);
   const bw = (x1 - x0) / arr.length;
+  small(g, cap, x1, y0 + 4, { align: 'right', color: COL.ink });
   for (const [i, s, al] of labs) small(g, s, al === 'right' ? x1 : x0 + (i + .5) * bw, 117, { align: al || 'center', mono: /^[\d+]+$/.test(s) });
 }
 const S = {};
@@ -267,7 +267,7 @@ S.bag = ({ rand, f }) => {
     },
     draw(g) {
       row.forEach((v, i) => { const x = 8 + i * 14 + slide * 14; g.fillStyle = PIECE[v]; rr(g, x, 24, 12, 12, 2); g.fill(); label(g, 'IOTSZJL'[v], x + 6, 33.5, { size: 8.5, align: 'center', color: '#0b0e1a', mono: true }); });
-      histPanel(g, hist, cnt, .2, i => i >= 13 ? COL.red : COL.cyan, [[0, '同じ形が来る間隔 1', 'left'], [6, '7'], [12, '13'], [23, '24+', 'right']]);
+      histPanel(g, hist, cnt, .2, i => i >= 13 ? COL.red : COL.cyan, '同じ形が次に来るまでの間隔', [[0, '1'], [6, '7'], [12, '13'], [23, '24+', 'right']]);
     },
     note: () => '最長 ' + maxG + '個あく'
   };
@@ -285,7 +285,7 @@ S.prd = ({ rand, f }) => {
     },
     draw(g) {
       row.forEach((h, i) => { const x = 8 + i * 5.6; g.fillStyle = h ? COL.yellow : '#4a5270'; if (h) g.fillRect(x, 22, 4, 18); else g.fillRect(x, 34, 4, 6); });
-      histPanel(g, hist, cnt, .3, COL.cyan, [[0, '会心の間隔 1', 'left'], [3, '4'], [7, '8'], [15, '16+', 'right']]);
+      histPanel(g, hist, cnt, .3, COL.cyan, '次の会心までの回数', [[0, '1'], [3, '4'], [7, '8'], [15, '16+', 'right']]);
     },
     note: () => '会心 ' + pct(hits / tot)
   };
@@ -304,14 +304,14 @@ S.twin = ({ rand, f }) => {
       let s = 0;
       for (let i = 1; i <= row.length; i++) if (i === row.length || row[i] !== row[s]) { if (i - s >= 3) { g.fillStyle = 'rgba(255,84,112,.35)'; rr(g, 8 + s * 7.4 - 1, 24, (i - s) * 7.4 - 1, 14, 4); g.fill(); } s = i; }
       row.forEach((v, i) => dot(g, 11.5 + i * 7.4, 31, 3, v ? COL.yellow : COL.blue));
-      histPanel(g, hist, cnt, .6, i => i >= 2 ? COL.red : COL.cyan, [[0, '同じ面が続く回数 1', 'left'], [2, '3'], [5, '6'], [9, '10+', 'right']]);
+      histPanel(g, hist, cnt, .6, i => i >= 2 ? COL.red : COL.cyan, '同じ面が続いた回数', [[0, '1'], [2, '3'], [5, '6'], [9, '10+', 'right']]);
     },
     note: () => '最長 ' + mx + '連続'
   };
 };
 
 const twoRN = card({
-  s: 'fair', name: '見かけの確率（2つの乱数の平均）', tag: 'hit if (r1 + r2) / 2 < p',
+  s: 'fair', name: '見かけの確率', tag: 'hit if (r1 + r2) / 2 < p',
   desc: '人は「90%なのに外れた」ことを強く覚えていて、表示より当たらないと感じがちです。そこで乱数を2つ引いて平均をとると、高い確率はより当たりやすく、低い確率はより当たりにくくなります（オレンジの曲線）。一部のシミュレーションRPGで知られる工夫です。',
   hint: 'つまみで表示の命中率を変える',
   sliders: () => [slider({ label: '表示の命中率', y: 16, min: 0, max: 100, v: 80, fmt: v => v + '%' })],
@@ -331,10 +331,10 @@ const twoRN = card({
     const pts = []; for (let i = 0; i <= 50; i++) pts.push([X(i / 50), Y(th(i / 50))]); poly(g, pts, COL.accent, 2);
     line(g, X(p), y0, X(p), y1, 'rgba(255,255,255,.35)', 1, [2, 3]);
     if (st.n) { dot(g, X(p), Y(st.a / st.n), 4, COL.cyan, '#0d1122'); dot(g, X(p), Y(st.b / st.n), 4.5, COL.yellow, '#0d1122'); }
-    small(g, '乱数1つ', X(.9), Y(.9) + 14, { align: 'center', color: COL.cyan });
+    small(g, '点線：乱数1つ（表示どおり）', X(.98), Y(.3), { align: 'right', color: COL.cyan });
     small(g, '2つの平均', X(.2), Y(th(.3)) - 10, { color: COL.accent });
     for (const v of [0, .5, 1]) { small(g, (v * 100) + '%', X(v), 209, { align: 'center', mono: true }); small(g, (v * 100) + '%', x0 - 4, Y(v) + 3, { align: 'right', mono: true }); }
-    small(g, '実際', x0 - 4, y0 - 6, { align: 'right', color: COL.ink });
+    small(g, '実際に当たる割合', x0 + 5, y0 + 10, { color: COL.ink });
   },
   hud(st) { return st.n ? ['乱数1つ   ' + pct(st.a / st.n), '2つの平均 ' + pct(st.b / st.n)] : []; }
 });
@@ -359,11 +359,11 @@ const cumul = card({
       const n = Math.ceil(Math.log(1 - q) / Math.log(1 - p));
       line(g, x0, Y(q), X(n), Y(q), 'rgba(255,255,255,.3)', 1, [2, 3]); line(g, X(n), Y(q), X(n), y1, 'rgba(255,255,255,.3)', 1, [2, 3]);
       dot(g, X(n), Y(q), 2.6, '#fff');
-      label(g, (q * 100) + '% → ' + n + '回', X(n) + 5, Y(q) + 12, { size: 9.5, mono: true, weight: 500, color: COL.ink, bg: 'rgba(13,17,34,.8)' });
+      label(g, (q * 100) + '% → ' + n + '回', q > .95 ? X(n) - 5 : X(n) + 5, Y(q) + 13, { align: q > .95 ? 'right' : 'left', size: 9.5, mono: true, weight: 500, color: COL.ink, bg: 'rgba(13,17,34,.8)' });
       small(g, (q * 100) + '%', x0 - 4, Y(q) + 3, { align: 'right', mono: true });
     }
     const m = Math.round(1 / p); line(g, X(m), y0 + 30, X(m), y1, COL.red, 1, [3, 2]);
-    small(g, '1/p = ' + m + '回', X(m) - 3, y1 - 6, { align: 'right', color: COL.red });
+    small(g, '1/p = ' + m + '回', X(m) + 4, y0 + 40, { color: COL.red });
     small(g, '0', x0, 211, { align: 'center', mono: true }); small(g, N + '回', x1, 211, { align: 'right', mono: true });
   },
   hud(st) { const p = st.sl[0].v / 100, m = Math.round(1 / p); let c = 0; for (let n = 1; n <= m; n++) c += st.h[n]; return ['試した人 ' + num(st.n), m + '回引いても出ない人 ' + (st.n ? pct(1 - c / st.n) : '—')]; }
@@ -495,8 +495,8 @@ S.box = ({ rand, f }) => {
     },
     draw(g) {
       for (let i = 0; i < 100; i++) { const x = 13 + (i % 10) * 6.4, y = 30 + (i / 10 | 0) * 6.4; const col = i === flash ? '#fff' : i === prize ? COL.yellow : cells[i] ? '#1e2440' : '#5a6488'; dot(g, x, y, i === prize ? 2.9 : 2.3, col); }
-      small(g, hold ? '当たり！ ' + drawn + '回目' : '引いた ' + drawn + '回', 10, 106, { color: hold ? COL.yellow : COL.ink });
-      const x0 = 84, x1 = 232, y0 = 26, y1 = 96;
+      small(g, hold ? '当たり ' + drawn + '回目' : '引いた ' + drawn + '回', 10, 106, { color: hold ? COL.yellow : COL.ink });
+      const x0 = 100, x1 = 232, y0 = 26, y1 = 96;
       g.fillStyle = AXIS; g.fillRect(x0, y1, x1 - x0, 1);
       bars(g, x0, y0, x1 - x0, y1 - y0, hist.map(c => cnt ? c / cnt : 0), .12, f ? COL.cyan : COL.cyan);
       const bw = (x1 - x0) / 30;
@@ -530,7 +530,7 @@ const xp = card({
       const full = [], now = []; for (let i = 0; i <= 200; i++) { const t = i / 200, p = [X(t), Y(lv(t))]; full.push(p); if (t <= u) now.push(p); }
       g.globalAlpha = .22; poly(g, full, col, 1.2); g.globalAlpha = 1; poly(g, now, col, 2);
       const L = lv(u); dot(g, X(u), Y(L), 3.5, col, '#0d1122');
-      label(g, 'Lv' + L, Math.min(X(u) + 6, 200), Y(L) + (k === 2 ? 12 : -4), { size: 10, mono: true, color: col, weight: 500 });
+      label(g, 'Lv' + L, Math.min(X(u) + 6, 200), Y(L) + [-8, 3, 14][k], { size: 10, mono: true, color: col, weight: 500 });
       g.fillStyle = col; g.fillRect(38, 42 + k * 15, 10, 3); small(g, name, 52, 46 + k * 15, { color: COL.ink });
     });
     small(g, 'プレイ時間 →', x1, 214, { align: 'right' });
@@ -613,15 +613,15 @@ const dimin = card({
     axes(g, x0, y0, x1, y1);
     for (const v of [.25, .5, .75, 1]) { line(g, x0, Y(v), x1, Y(v), GRIDC); small(g, (v * 100) + '%', x0 - 4, Y(v) + 3, { align: 'right', mono: true }); }
     poly(g, [[X(0), Y(0)], [X(400), Y(1)]], FAINT, 1.2, [4, 3]);
-    small(g, 'そのまま足すと無敵', X(280) - 6, Y(.7) - 4, { align: 'right', color: FAINT });
+    small(g, 'そのまま足すと400で無敵 ↗', X(290), Y(.93), { align: 'right', color: FAINT });
     const pts = []; for (let s = 0; s <= 400; s += 5) pts.push([X(s), Y(f(s))]); poly(g, pts, COL.accent, 2);
     for (let i = 1; i <= k; i++) { const a = (i - 1) * 40, b = i * 40; line(g, X(a), Y(f(a)), X(b), Y(f(a)), 'rgba(79,224,255,.6)', 1); line(g, X(b), Y(f(a)), X(b), Y(f(b)), COL.cyan, 2); }
     dot(g, X(k * 40), Y(f(k * 40)), 4, '#fff', '#0d1122');
     small(g, '防御力 400', x1, 159, { align: 'right' }); small(g, '0', x0, 159, { align: 'center', mono: true });
     const by = 214, bw = (x1 - x0) / 10;
     g.fillStyle = AXIS; g.fillRect(x0, by, x1 - x0, 1);
-    small(g, '+40ごとの伸び', 8, 172, { color: COL.ink });
-    for (let i = 1; i <= k; i++) { const d = f(i * 40) - f((i - 1) * 40), h = d / .3 * 40; g.fillStyle = COL.cyan; g.fillRect(x0 + (i - 1) * bw + 2, by - h, bw - 4, h); label(g, '+' + (d * 100).toFixed(0), x0 + (i - .5) * bw, by - h - 3, { size: 9, align: 'center', mono: true, color: COL.ink, weight: 500 }); }
+    small(g, '+40ごとの伸び', 8, 166, { color: COL.ink });
+    for (let i = 1; i <= k; i++) { const d = f(i * 40) - f((i - 1) * 40), h = d / .3 * 28; g.fillStyle = COL.cyan; g.fillRect(x0 + (i - 1) * bw + 2, by - h, bw - 4, h); label(g, '+' + (d * 100).toFixed(0), x0 + (i - .5) * bw, by - h - 3, { size: 9, align: 'center', mono: true, color: COL.ink, weight: 500 }); }
   },
   hud(st) { const k = Math.min(10, Math.floor(st.t / 30)); return ['防御力 ' + k * 40 + ' → 軽減 ' + pct(k * 40 / (k * 40 + 100))]; }
 });
@@ -656,21 +656,25 @@ S.rubber = ({ rand, f }) => {
 
 const RPS_C = [[255, 84, 112], [255, 216, 77], [91, 140, 255]];
 const rps = card({
-  s: 'match', name: '3すくみ', tag: 'グー > チョキ > パー > グー',
-  desc: 'グー・チョキ・パーの3種類が、隣にいる負ける相手を自分の色に塗り替えていきます。どれかが増えると、それに勝つ種類が増えて押し返すので、3色がうず巻きのように追いかけ合い、どれも消えずに回り続けます。',
+  s: 'match', name: '3すくみ', tag: '勝つ相手が周りに3つ以上 → 塗り替わる',
+  desc: 'グー（赤）・チョキ（黄）・パー（青）のマスがあり、まわり8マスのうち3つ以上が自分に勝つ相手なら、その色に塗り替えられます。どれかが増えると、それに勝つ種類が増えて押し返すので、3色がうず巻きのように追いかけ合い、どれも消えずに回り続けます。',
   hint: 'クリックでその場所に1種類をまとめて置く',
   init(st) {
     const n = st.n = 80, m = st.m = 66; st.a = new Uint8Array(n * m); for (let i = 0; i < n * m; i++) st.a[i] = st.rand() * 3 | 0;
     st.c = document.createElement('canvas'); st.c.width = n; st.c.height = m; st.cg = st.c.getContext('2d'); st.im = st.cg.createImageData(n, m); st.hist = []; st.kind = 0;
   },
   step(st) {
-    const { n, m, a, rand } = st;
-    for (let k = 0; k < 9000; k++) {
-      const i = rand() * n * m | 0, x = i % n, y = i / n | 0, d = rand() * 4 | 0;
-      const j = d === 0 ? y * n + (x + 1) % n : d === 1 ? y * n + (x + n - 1) % n : d === 2 ? ((y + 1) % m) * n + x : ((y + m - 1) % m) * n + x;
-      if (a[i] === (a[j] + 1) % 3) a[i] = a[j];
+    const { n, m, rand } = st;
+    if (st.t % 3 === 0) {
+      const a = st.a, b = st.b || (st.b = new Uint8Array(n * m));
+      for (let y = 0; y < m; y++) for (let x = 0; x < n; x++) {
+        const i = y * n + x, pr = (a[i] + 2) % 3; let c = 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { if (!dx && !dy) continue; if (a[((y + dy + m) % m) * n + (x + dx + n) % n] === pr) c++; }
+        b[i] = c >= 3 ? pr : a[i];
+      }
+      st.b = a; st.a = b;
     }
-    if (st.t % 2 === 0) { const c = [0, 0, 0]; for (let i = 0; i < n * m; i++) c[a[i]]++; st.hist.push(c.map(v => v / (n * m))); if (st.hist.length > 220) st.hist.shift(); }
+    if (st.t % 2 === 0) { const a = st.a, c = [0, 0, 0]; for (let i = 0; i < n * m; i++) c[a[i]]++; st.hist.push(c.map(v => v / (n * m))); if (st.hist.length > 220) st.hist.shift(); }
   },
   down(st, p) { const cx = p.x / 3 | 0, cy = p.y / 3 | 0; if (cy >= st.m) return; for (let y = -7; y <= 7; y++) for (let x = -7; x <= 7; x++) if (x * x + y * y <= 49) { const X = (cx + x + st.n) % st.n, Y = (cy + y + st.m) % st.m; st.a[Y * st.n + X] = st.kind; } st.kind = (st.kind + 1) % 3; },
   draw(g, st) {
@@ -706,9 +710,9 @@ const luck = card({
     if (st.n) dot(g, X(L), Y(st.w / st.n), 4.5, COL.yellow, '#0d1122');
     small(g, '強い人の勝率', x0 + 4, y0 + 10, { color: COL.ink });
     small(g, '実力だけ', x0, 182, { align: 'left' }); small(g, '運だけ', x1, 182, { align: 'right' });
-    small(g, '最近の対戦', 8, 200, { color: COL.ink });
-    st.row.forEach((w, i) => { g.fillStyle = w ? COL.orange : COL.cyan; g.fillRect(66 + i * 3.7, w ? 190 : 196, 2.8, 6); });
-    small(g, '強い人の勝ち', 232, 187, { align: 'right', size: 8.5, color: COL.orange }); small(g, '弱い人の勝ち', 232, 211, { align: 'right', size: 8.5, color: COL.cyan });
+    small(g, '最近の対戦', 8, 206, { color: COL.ink });
+    st.row.forEach((w, i) => { g.fillStyle = w ? COL.orange : COL.cyan; g.fillRect(66 + i * 3.7, w ? 196 : 202, 2.8, 6); });
+    g.fillStyle = COL.orange; g.fillRect(96, 216, 6, 6); small(g, '強い人の勝ち', 106, 223, { color: COL.orange }); g.fillStyle = COL.cyan; g.fillRect(170, 216, 6, 6); small(g, '弱い人の勝ち', 180, 223, { color: COL.cyan });
   },
   hud(st) { const L = st.sl[0].v / 100; const k = L <= 0 ? 9 : (1 - L) * .2 / L; return ['計算 ' + pct(k >= 1 ? 1 : 1 - (1 - k) * (1 - k) / 2) + ' · 実測 ' + (st.n ? pct(st.w / st.n) : '—')]; }
 });
@@ -731,14 +735,14 @@ const elo = card({
   },
   draw(g, st) {
     bg(g);
-    const x0 = 36, x1 = 218, y0 = 34, y1 = 204, Y = v => y1 - (v - 1000) / 1000 * (y1 - y0), n = st.H.length;
+    const x0 = 36, x1 = 218, y0 = 48, y1 = 204, Y = v => y1 - (v - 1000) / 1000 * (y1 - y0), n = st.H.length;
     axes(g, x0, y0, x1, y1);
     for (const v of [1000, 1500, 2000]) { line(g, x0, Y(v), x1, Y(v), GRIDC); small(g, String(v), x0 - 4, Y(v) + 3, { align: 'right', mono: true }); }
     ELO_C.forEach((c, k) => {
       const pts = []; for (let i = 0; i < n; i++) pts.push([x0 + i / 399 * (x1 - x0), Y(st.H[i][k])]); poly(g, pts, c, 1.3);
       g.fillStyle = c; g.fillRect(x1 + 4, Y(st.T[k]) - 1, 10, 2.5);
     });
-    small(g, '本当の強さ', x1 + 14, y0 - 8, { align: 'right', size: 9 });
+    small(g, '本当の強さ ↓', x1 + 14, y0 - 6, { align: 'right', size: 9 });
     small(g, '試合 →', x1, 216, { align: 'right' });
   },
   hud(st) { let d = 0; for (let i = 0; i < 8; i++) d += Math.abs(st.R[i] - st.T[i]); return ['試合 ' + num(st.games) + ' · 本当の強さとのずれ 平均 ±' + (d / 8).toFixed(0)]; }
