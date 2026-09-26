@@ -601,7 +601,7 @@ const ITEMS = [
       S.update = (t, dt) => {
         ph = (ph + dt / WALK.T) % 1; gait(ph, WALK, J);
         const s = J.sh[1], w = .55 * Math.sin(t * 7);
-        J.el[1].copy(s).addScaledVector(dir.set(.1, .85, .45).normalize(), .29);
+        J.el[1].copy(s).addScaledVector(dir.set(.05, .6, .8).normalize(), .29);
         J.ha[1].copy(J.el[1]).addScaledVector(dir.set(.12, Math.cos(w), Math.sin(w)).normalize(), .27);
         F.pose(); scroll(speed(WALK) * dt);
       };
@@ -610,7 +610,7 @@ const ITEMS = [
   { s: 'blend', name: 'ルートモーション', tag: 'root motion vs その場歩き', hint: '手前：足の動きどおりに進む　奥：速すぎて足がすべる',
     desc: '2人とも同じ歩きの動きですが、進む速さの決め方が違います。手前は、足が地面をけった分だけ体を前へ進めるので（ルートモーション）、足あとがその場にとどまります。奥は、その場歩きの動きを別に決めた速さで動かしているので、速さが合わず足が地面をすべり、足あとが長くのびてしまいます。',
     make: (ctx) => {
-      const S = stage(ctx, { cam: [0, 1.7, 6.2], look: [0, .6, 0], fov: 36, floor: false }), R = new THREE.Group(); R.rotation.y = .25; S.root.add(R);
+      const S = stage(ctx, { cam: [0, 2, 7.4], look: [0, .55, 0], fov: 34, floor: false }), R = new THREE.Group(); R.rotation.y = .25; S.root.add(R);
       const fl = mesh(new THREE.PlaneGeometry(4.6, 2.2), M(0x5a5f69, { roughness: .95 }), R); fl.rotation.x = -PI / 2; stripes(ctx, fl, 4.6);
       const v = speed(WALK);
       const mk = (z, mul, c, torso) => { const F = Figure(R, { torso }); F.g.position.z = z;

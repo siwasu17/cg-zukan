@@ -331,7 +331,7 @@ const twoRN = card({
     const pts = []; for (let i = 0; i <= 50; i++) pts.push([X(i / 50), Y(th(i / 50))]); poly(g, pts, COL.accent, 2);
     line(g, X(p), y0, X(p), y1, 'rgba(255,255,255,.35)', 1, [2, 3]);
     if (st.n) { dot(g, X(p), Y(st.a / st.n), 4, COL.cyan, '#0d1122'); dot(g, X(p), Y(st.b / st.n), 4.5, COL.yellow, '#0d1122'); }
-    small(g, '点線：乱数1つ（表示どおり）', X(.98), Y(.3), { align: 'right', color: COL.cyan });
+    small(g, '点線：乱数1つ（表示どおり）', X(.98), Y(.08), { align: 'right', color: COL.cyan });
     small(g, '2つの平均', X(.2), Y(th(.3)) - 10, { color: COL.accent });
     for (const v of [0, .5, 1]) { small(g, (v * 100) + '%', X(v), 209, { align: 'center', mono: true }); small(g, (v * 100) + '%', x0 - 4, Y(v) + 3, { align: 'right', mono: true }); }
     small(g, '実際に当たる割合', x0 + 5, y0 + 10, { color: COL.ink });
