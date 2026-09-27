@@ -264,10 +264,10 @@ const ITEMS = [
   { s: 'shading', name: '単色（アンリット）', tag: 'MeshBasicMaterial',
     desc: '光を一切計算せず、全部の面を同じ色で塗ります。陰影がないので丸い円盤にしか見えません。立体感は陰影から生まれる、ということがよく分かる例です。',
     make: () => mesh(new THREE.MeshBasicMaterial({ color: BLUE })) },
-  { s: 'shading', name: 'ランバート', tag: 'MeshLambertMaterial',
+  { s: 'shading', name: 'ランバート', tag: 'MeshLambertMaterial', noEnv: true,
     desc: '光の向きと面の向きだけで明るさを決める、最も基本的な陰影。つやのない紙や素焼きのような見た目になります。',
     make: () => mesh(new THREE.MeshLambertMaterial({ color: BLUE })) },
-  { s: 'shading', name: 'フォン', tag: 'MeshPhongMaterial · shininess',
+  { s: 'shading', name: 'フォン', tag: 'MeshPhongMaterial · shininess', noEnv: true,
     desc: 'ランバートに「ハイライト（光の点）」を足したもの。2000年代のゲームによくある、つるっとしたプラスチック感です。',
     make: () => mesh(new THREE.MeshPhongMaterial({ color: BLUE, specular: 0x777777, shininess: 70 })) },
   { s: 'shading', name: 'フラットシェーディング', tag: 'flatShading: true',
@@ -535,7 +535,7 @@ function setup(ctx) {
 /* every card: the same camera and lights around one object */
 function build(it) {
   const scene = new THREE.Scene();
-  scene.background = BG; scene.environment = ENV;
+  scene.background = BG; scene.environment = it.noEnv ? null : ENV; /* newer three.js lets Lambert / Phong pick up scene.environment too */
   const d = new THREE.DirectionalLight(0xffffff, 5.34); d.position.copy(L).multiplyScalar(10); scene.add(d);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x2a2a30, .94));
   if (it.backdrop) {
