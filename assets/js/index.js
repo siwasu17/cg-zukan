@@ -56,6 +56,9 @@
     }
   }
 
+  // offline support / install as an app (see sw.js)
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+
   fetch('catalogues.json', { cache: 'no-cache' })
     .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(render)
