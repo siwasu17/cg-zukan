@@ -77,3 +77,13 @@ node scripts/thumbnail.mjs material:4 furfluid:8 lighting:20 post:6
 ```
 
 `<id>:<番号>` の番号は、ページ内で何枚目のカードを撮るか（0から数える）です。撮影後、`catalogues.json` の `thumbnail` が自動で書き込まれます。
+
+## アプリとして使う（PWA）
+
+公開ページはスマートフォンのホーム画面やパソコンにアプリとして追加できます（Chrome・Edge はアドレスバーのインストールボタン、iPhone は Safari の共有メニューから「ホーム画面に追加」）。
+
+- `manifest.webmanifest`：アプリの名前・アイコン・色。アイコンは `assets/icons/` にあります（元の絵は `icon.svg`）。
+- `sw.js`：Service Worker。一度オンラインで開くと、一覧ページと `catalogues.json` に載っているすべての図鑑を保存し、オフラインでも開けるようにします。3Dの図鑑は three.js も必要なので、オフラインで見るには一度オンラインで開いておく必要があります。
+- 自分のサイトのファイルは常にネットワークを先に見に行くので、更新は次に開いたときに反映されます。`sw.js` の `CACHE` の名前を変えると、保存済みのファイルをまとめて捨てられます。
+
+新しい図鑑のページには `manifest.webmanifest` を読み込むタグが必要です。ひな形には入っているので、スクリプトで作った場合は何もしなくて大丈夫です（`node scripts/check.mjs` で確認できます）。

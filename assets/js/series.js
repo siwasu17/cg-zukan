@@ -44,4 +44,6 @@
       });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+  // offline support / install as an app (see sw.js)
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register(root + 'sw.js').catch(() => {});
 })();

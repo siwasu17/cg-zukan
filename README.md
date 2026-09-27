@@ -4,7 +4,9 @@
 
 **公開ページ: https://siwasu17.github.io/cg-zukan/**
 
-手元で動かす手順、新しい図鑑の追加、見本カードの書き方、サムネイルの撮り方は [docs/guide.md](docs/guide.md) にあります。
+ホーム画面やパソコンにアプリとして追加でき、一度開けばオフラインでも見られます（PWA）。
+
+手元で動かす手順、新しい図鑑の追加、見本カードの書き方、サムネイルの撮り方、PWA の仕組みは [docs/guide.md](docs/guide.md) にあります。
 
 ## 収録している図鑑
 
@@ -32,6 +34,8 @@
 .
 ├── index.html               一覧ページ（catalogues.json から自動で組み立てる）
 ├── catalogues.json          図鑑の一覧（ここに登録すると一覧とシリーズのリンクに出る）
+├── manifest.webmanifest     アプリとして追加するときの名前・アイコン（PWA）
+├── sw.js                    オフラインで開けるようにする Service Worker
 ├── assets/
 │   ├── css/base.css         図鑑ページ共通のデザイン
 │   ├── css/series.css       ページ上部の「図鑑シリーズ」リンクの見た目
@@ -39,7 +43,8 @@
 │   ├── js/g2d.js            2D図鑑の共通処理（カード作成・60fps の更新・マウス操作・リセット）
 │   ├── js/g3d.js            3D図鑑の共通処理（three.js、カードごとの描画領域・ドラッグ回転）
 │   ├── js/series.js         「図鑑シリーズ」リンクを catalogues.json から作る
-│   └── js/index.js          一覧ページの描画
+│   ├── js/index.js          一覧ページの描画
+│   └── icons/               アプリのアイコン（icon.svg が元の絵）
 ├── catalogues/
 │   └── <id>/
 │       ├── index.html       図鑑のページ（見出し・説明文・用語）

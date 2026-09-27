@@ -30,6 +30,7 @@ for (const c of m.catalogues || []) {
       const html = readFileSync(page, 'utf8');
       if (!html.includes('assets/js/series.js')) warnings.push(`${where}: series.js を読み込んでいません（シリーズのリンクが出ません）`);
       else if (!html.includes(`data-catalogue="${c.id}"`)) warnings.push(`${where}: series.js の data-catalogue が "${c.id}" になっていません`);
+      if (!html.includes('manifest.webmanifest')) warnings.push(`${where}: manifest.webmanifest を読み込んでいません（アプリとして追加したときの名前やアイコンが出ません）`);
       if (/claude\.ai\/artifact/.test(html)) warnings.push(`${where}: claude.ai のアーティファクトへのリンクが残っています`);
     }
   }

@@ -39,7 +39,7 @@ jobs:
       - name: Collect site files
         run: |
           mkdir -p _site
-          cp -r index.html catalogues.json assets catalogues .nojekyll _site/
+          cp -r index.html catalogues.json manifest.webmanifest sw.js assets catalogues .nojekyll _site/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
