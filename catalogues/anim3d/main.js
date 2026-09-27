@@ -64,8 +64,8 @@ function stage(ctx, o = {}) {
   const camera = new THREE.PerspectiveCamera(o.fov || 32, 1, .1, 50);
   camera.position.set(...(o.cam || [0, 1.25, 5.2])); camera.lookAt(...(o.look || [0, .85, 0])); scene.add(camera);
   const root = new THREE.Group(); scene.add(root);
-  const d = new THREE.DirectionalLight(0xffffff, 1.35); d.position.set(-2, 4, 3); scene.add(d);
-  scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x2a2622, .35));
+  const d = new THREE.DirectionalLight(0xffffff, 4.24); d.position.set(-2, 4, 3); scene.add(d);
+  scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x2a2622, 1.1));
   const S = { scene, camera, root };
   if (o.floor !== false) { S.floor = mesh(new THREE.CircleGeometry(o.floor || 2.2, 64), M(0x30333a, { roughness: .95 }), root); S.floor.rotation.x = -PI / 2; }
   return S;

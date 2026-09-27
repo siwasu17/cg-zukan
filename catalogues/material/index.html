@@ -27,11 +27,11 @@
 <nav id="nav" aria-label="カテゴリ"></nav>
 </header>
 <main id="main"></main>
-<footer>three.js r149 と自作の GLSL シェーダーでリアルタイムに描画しています。テクスチャ画像もすべてページ内でプログラムから生成しています。</footer>
+<footer>three.js r186 と自作の GLSL シェーダーでリアルタイムに描画しています。テクスチャ画像もすべてページ内でプログラムから生成しています。</footer>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
-<script src="../../assets/js/g3d.js"></script>
-<script src="../../assets/js/series.js" data-catalogue="material"></script>
-<script src="main.js"></script>
+<script type="module">import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.min.js'; window.THREE = THREE;</script>
+<script defer src="../../assets/js/g3d.js"></script>
+<script defer src="../../assets/js/series.js" data-catalogue="material"></script>
+<script defer src="main.js"></script>
 </body>
 </html>

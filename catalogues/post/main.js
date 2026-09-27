@@ -21,7 +21,7 @@ function buildScene(ctx) {
   const bulbs = []; [[-2, .12, 1.4, 0xff6ad5], [2.1, .12, 1.1, 0xffb040], [-.2, .12, -2.6, 0x9f7bff]].forEach(([x, y, z, c]) => bulbs.push(add(new THREE.SphereGeometry(.12, 24, 16), new THREE.MeshStandardMaterial({ color: 0, emissive: c, emissiveIntensity: 8 }), [x, y, z])));
   for (let i = 0; i < 9; i++) for (const sx of [-1, 1]) add(new THREE.BoxGeometry(.35, 2.2, .35), new THREE.MeshStandardMaterial({ color: 0x8890a8, roughness: .6 }), [sx * 2.6, 1.1, -1 - i * 2.4]);
   const ball = add(new THREE.SphereGeometry(.28, 32, 24), new THREE.MeshStandardMaterial({ color: 0x5ef08a, roughness: .3 }), [1.9, .3, -.6]);
-  const d = new THREE.DirectionalLight(0xfff0e0, 1.5); d.position.set(-3, 5, 2); scene.add(d); scene.add(new THREE.HemisphereLight(0x8090ff, 0x402030, .5));
+  const d = new THREE.DirectionalLight(0xfff0e0, 4.71); d.position.set(-3, 5, 2); scene.add(d); scene.add(new THREE.HemisphereLight(0x8090ff, 0x402030, 1.57));
   let lastT = -1;
   const animate = (t) => { if (t === lastT) return; lastT = t; torus.rotation.set(t * .9, t * 1.3, 0); ball.position.y = .28 + Math.abs(Math.sin(t * 2.6)) * 1.2; ball.position.x = 1.9 + Math.sin(t * 1.1) * .5; };
   return { scene, camera, group, animate };

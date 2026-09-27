@@ -3,6 +3,9 @@
 (function () {
 'use strict';
 const DPR = Math.min(window.devicePixelRatio || 1, 2);
+/* the catalogues' colours were tuned without colour management (three.js r149
+   default): hex / CSS colours are used as-is instead of being linearised */
+if (typeof THREE !== 'undefined') THREE.ColorManagement.enabled = false;
 
 function series() { /* handled by assets/js/series.js */ }
 
@@ -51,11 +54,11 @@ function run(cfg) {
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); } catch (e) { fail('このブラウザでは WebGL が使えないため、描画できません。'); return; }
   renderer.setPixelRatio(DPR); renderer.setClearColor(0x000000, 0);
-  renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = cfg.exposure || 1;
+  renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = cfg.exposure || 1;
   if (cfg.shadows) { renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap; }
 
   const ctx = { renderer, DPR };
-  ctx.tex = (w, h, draw, srgb = true) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); if (srgb) t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; };
+  ctx.tex = (w, h, draw, srgb = true) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
   ctx.BG = ctx.tex(256, 256, (g, w, h) => { const gr = g.createRadialGradient(w * .5, h * .42, 0, w * .5, h * .5, w * .75); gr.addColorStop(0, '#34383f'); gr.addColorStop(1, '#16181c'); g.fillStyle = gr; g.fillRect(0, 0, w, h); });
   ctx.makeEnv = () => {
     const room = new THREE.Scene();
