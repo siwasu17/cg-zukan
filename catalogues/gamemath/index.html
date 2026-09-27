@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ゲームの数学図鑑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../assets/css/base.css">
+<link rel="stylesheet" href="../../assets/css/series.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+<div class="eyebrow">Game math catalogue</div>
+<h1>ゲームの数学図鑑</h1>
+<p class="lead">キャラクターが敵のほうを向く、弾がまっすぐ飛ぶ、カメラがなめらかについてくる、剣が当たったかを調べる。ゲームの動きの下では、いつも小さな数学が働いています。ここでは、ベクトル・角度・補間・当たり判定の基本を、矢印や数字を画面に出しながら動かしました。</p>
+<p class="note">多くのカードは、丸い点をマウス（指）でドラッグして動かせます。触ると自動の動きが止まり、「最初から」で元に戻ります。</p>
+<dl class="gloss">
+  <div><dt>ベクトル<span>vector</span></dt><dd>向きと長さをもった量。(x, y) の2つの数で表し、矢印で描く。位置の差や速さを表すのに使う。</dd></div>
+  <div><dt>正規化<span>normalize</span></dt><dd>ベクトルの向きはそのままで、長さを1にそろえること。「向きだけ」がほしいときに使う。</dd></div>
+  <div><dt>補間<span>interpolation</span></dt><dd>2つの値のあいだを、割合 t（0〜1）で埋めること。t = 0 で始まり、t = 1 で終わる。</dd></div>
+  <div><dt>画面の座標<span>screen coordinates</span></dt><dd>右が x のプラス、下が y のプラス。数学の教科書とは上下が逆なので、角度は時計回りがプラスになる。</dd></div>
+</dl>
+<div class="series" id="series"></div>
+<div class="controls"><button id="play" type="button" aria-pressed="false">一時停止</button><button id="resetAll" type="button">すべて最初から</button></div>
+<nav id="nav" aria-label="カテゴリ"></nav>
+</header>
+<main id="main"></main>
+<footer>すべて Canvas 2D と JavaScript で、その場で計算して描いています。</footer>
+</div>
+<script src="../../assets/js/g2d.js"></script>
+<script src="../../assets/js/series.js" data-catalogue="gamemath"></script>
+<script src="main.js"></script>
+</body>
+</html>

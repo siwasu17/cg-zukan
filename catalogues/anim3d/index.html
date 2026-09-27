@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3Dアニメーション図鑑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../assets/css/base.css">
+<link rel="stylesheet" href="../../assets/css/series.css">
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="wrap">
+<header class="top">
+<div class="eyebrow">3D animation catalogue</div>
+<h1>3Dアニメーション図鑑</h1>
+<p class="lead">ゲームや映画の3Dキャラクターは、どうやって動いているのでしょう。この図鑑では、骨を入れて表面を曲げる仕組みから、回転のなめらかなつなぎ方、手足を目標に届かせる計算、揺れやしなりのような細かい動き、いくつもの動きの混ぜ方までを、小さな人形や筒で見比べます。モデルのファイルは使わず、形も動きもすべてその場で計算して作っています。</p>
+<p class="note">ドラッグ（またはフォーカスして矢印キー）で回せます。見比べやすさのため、自動で回らないカードもあります。</p>
+<dl class="gloss">
+  <div><dt>ボーン（骨）<span>bone</span></dt><dd>形の中に入れる、目に見えない骨組み。親子につながっていて、骨を回すと、ついている表面も一緒に動く。</dd></div>
+  <div><dt>キーフレーム<span>keyframe</span></dt><dd>「この時刻にこの姿勢」と決めた印。キーとキーの間は、コンピューターが計算で埋める（補間）。</dd></div>
+  <div><dt>IK<span>inverse kinematics</span></dt><dd>インバースキネマティクス。手や足の先を置きたい位置から、逆に関節の角度を計算する方法。</dd></div>
+  <div><dt>クォータニオン<span>quaternion</span></dt><dd>回転を4つの数で表す方法。2つの向きの間を、遠回りせずなめらかにつなげる。</dd></div>
+</dl>
+<div class="series" id="series"></div>
+<nav id="nav" aria-label="カテゴリ"></nav>
+</header>
+<main id="main"></main>
+<footer>three.js r149 でリアルタイムに描画しています。形・骨・動きはすべてプログラムで作っています。</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script src="../../assets/js/g3d.js"></script>
+<script src="../../assets/js/series.js" data-catalogue="anim3d"></script>
+<script src="main.js"></script>
+</body>
+</html>
