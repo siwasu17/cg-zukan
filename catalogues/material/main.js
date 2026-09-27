@@ -30,7 +30,7 @@ function ctex(w, h, draw, srgb = true) {
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   draw(c.getContext('2d'), w, h);
   const t = new THREE.CanvasTexture(c);
-  if (srgb) t.encoding = THREE.sRGBEncoding;
+  if (srgb) t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 8;
   return t;
 }
@@ -73,7 +73,7 @@ function dirOf(i, j, W, H) {
   return [-Math.cos(phi) * Math.sin(th), Math.cos(th), Math.sin(phi) * Math.sin(th)];
 }
 function eachPixel(W, H, fn) { const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); const img = g.createImageData(W, H); for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) { const o = (j * W + i) * 4; const [r, gg, b] = fn(i, j); img.data[o] = r; img.data[o + 1] = gg; img.data[o + 2] = b; img.data[o + 3] = 255; } g.putImageData(img, 0, 0); return c; }
-function texOf(c, srgb) { const t = new THREE.CanvasTexture(c); if (srgb) t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; }
+function texOf(c, srgb) { const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }
 const mix = (a, b, t) => a + (b - a) * t;
 const mix3 = (a, b, t) => [mix(a[0], b[0], t), mix(a[1], b[1], t), mix(a[2], b[2], t)];
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
@@ -536,8 +536,8 @@ function setup(ctx) {
 function build(it) {
   const scene = new THREE.Scene();
   scene.background = BG; scene.environment = ENV;
-  const d = new THREE.DirectionalLight(0xffffff, 1.7); d.position.copy(L).multiplyScalar(10); scene.add(d);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x2a2a30, .3));
+  const d = new THREE.DirectionalLight(0xffffff, 5.34); d.position.copy(L).multiplyScalar(10); scene.add(d);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x2a2a30, .94));
   if (it.backdrop) {
     const p = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.6), new THREE.MeshBasicMaterial({ map: CHECK, toneMapped: false }));
     p.position.z = -1.7; scene.add(p);

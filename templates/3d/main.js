@@ -1,7 +1,7 @@
 /*
  * {{TITLE}} — card definitions (3D).
  *
- * Runtime: assets/js/g3d.js  (window.G3D) on top of three.js r149 (global THREE)
+ * Runtime: assets/js/g3d.js  (window.G3D) on top of three.js r186 (window.THREE, set by the module script in index.html)
  *
  * G3D.run({ sections, items, minCol, aspect, shadows, rx, ry, spin, exposure, tilt, drag, parts, setup })
  *   items: [{ s, name, tag, desc, hint?, make(ctx) }]
@@ -28,8 +28,8 @@ function stage(ctx) {
   const scene = new THREE.Scene(); scene.background = ctx.BG;
   const camera = new THREE.PerspectiveCamera(32, 1, .1, 50); camera.position.set(0, 0, 4.4);
   const root = new THREE.Group(); scene.add(root);
-  const d = new THREE.DirectionalLight(0xffffff, 1.6); d.position.set(-2, 3, 4); scene.add(d);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x303038, .35));
+  const d = new THREE.DirectionalLight(0xffffff, 5.03); d.position.set(-2, 3, 4); scene.add(d);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x303038, 1.1));
   return { scene, camera, root };
 }
 

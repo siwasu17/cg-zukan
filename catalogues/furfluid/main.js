@@ -33,7 +33,7 @@ const uni = (extra) => Object.assign({ uTime: U.uTime, uL: U.uL, uDpr: U.uDpr },
 function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function ctex(w, h, draw, srgb = true) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
-  const t = new THREE.CanvasTexture(c); if (srgb) t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
+  const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
 }
 function randDir(r, minY = -1) { for (;;) { const z = r() * 2 - 1, a = r() * Math.PI * 2, s = Math.sqrt(1 - z * z); const v = [Math.cos(a) * s, z, Math.sin(a) * s]; if (v[1] >= minY) return v; } }
 
@@ -692,8 +692,8 @@ function setup(ctx) {
 /* every card: the same camera and lights around one object */
 function build(it) {
   const scene = new THREE.Scene(); scene.background = BG; scene.environment = ENV;
-  const d = new THREE.DirectionalLight(0xffffff, 1.7); d.position.copy(L).multiplyScalar(10); scene.add(d);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x2a2a30, .3));
+  const d = new THREE.DirectionalLight(0xffffff, 5.34); d.position.copy(L).multiplyScalar(10); scene.add(d);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x2a2a30, .94));
   if (it.backdrop) { const p = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.6), new THREE.MeshBasicMaterial({ map: CHECK, toneMapped: false })); p.position.z = -1.7; scene.add(p); }
   const root = new THREE.Group(); const obj = it.make(); root.add(obj); scene.add(root);
   return { scene, camera, root, update: (t, dt, v) => { U.uTime.value = t; if (obj.userData.update) obj.userData.update(t, dt, v.el.getBoundingClientRect(), root); } };
