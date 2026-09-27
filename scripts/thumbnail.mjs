@@ -23,8 +23,8 @@ for (const arg of ids) {
   const c = m.catalogues.find((x) => x.id === id);
   if (!c) { console.warn(`${id}: catalogues.json にありません`); continue; }
   await page.goto(base + c.path, { waitUntil: 'load' });
-  // each card's drawing area: canvas.stage (2D) or div.stage / div.stage3d (3D)
-  const stage = page.locator('canvas.stage, .stage3d, div.stage').nth(Number(n));
+  // each card's drawing area: canvas.stage (2D) or div.stage3d (3D)
+  const stage = page.locator('canvas.stage, .stage3d').nth(Number(n));
   await stage.scrollIntoViewIfNeeded();
   await page.waitForTimeout(3500);
   const box = await stage.boundingBox();

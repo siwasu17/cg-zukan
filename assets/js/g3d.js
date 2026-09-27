@@ -10,31 +10,48 @@ function run(cfg) {
   const main = document.getElementById('main'), nav = document.getElementById('nav');
   const fail = (msg) => { const d = document.createElement('div'); d.className = 'fail'; d.textContent = msg; main.prepend(d); };
   const views = [];
-  for (const sec of cfg.sections) {
-    const a = document.createElement('a'); a.href = '#' + sec.id; a.textContent = sec.title; nav.appendChild(a);
-    const el = document.createElement('section'); el.id = sec.id;
-    el.innerHTML = `<header><div class="eyebrow"></div><h2></h2><p></p></header><div class="grid"></div>`;
-    el.querySelector('.eyebrow').textContent = sec.en; el.querySelector('h2').textContent = sec.title; el.querySelector('p').textContent = sec.lead;
-    const grid = el.querySelector('.grid'); if (cfg.minCol) grid.style.setProperty('--min', cfg.minCol + 'px');
-    for (const it of cfg.items.filter(x => x.s === sec.id)) {
-      const card = document.createElement('article'); card.className = 'card';
-      const st = document.createElement('div'); st.className = 'stage3d'; st.tabIndex = 0; st.style.setProperty('--ar', cfg.aspect || '1');
-      st.setAttribute('role', 'img'); st.setAttribute('aria-label', it.name + '（ドラッグで回転）');
-      const meta = document.createElement('div'); meta.className = 'meta';
-      meta.innerHTML = '<h3></h3><code></code><p></p>' + (it.hint ? '<p class="hint"></p>' : '');
-      meta.querySelector('h3').textContent = it.name; meta.querySelector('code').textContent = it.tag; meta.querySelector('p').textContent = it.desc;
-      if (it.hint) meta.querySelector('.hint').textContent = it.hint;
-      card.append(st, meta); grid.appendChild(card);
-      views.push({ el: st, it, v: null, rx: cfg.rx !== undefined ? cfg.rx : 0, ry: cfg.ry !== undefined ? cfg.ry : 0, drag: null, last: -1e9 });
+  /* optional parts: sections carrying `part` are grouped under a big heading,
+     and the nav gets one row per part */
+  const parts = cfg.parts || [null];
+  if (cfg.parts) nav.classList.add('parts');
+  for (const part of parts) {
+    let host = main, row = nav, secs = cfg.sections;
+    const hs = part ? 'h3' : 'h2', hc = part ? 'h4' : 'h3';
+    if (part) {
+      host = document.createElement('div'); host.className = 'part'; host.id = part.id;
+      host.innerHTML = '<header><div class="eyebrow"></div><h2></h2><p></p></header>';
+      host.querySelector('.eyebrow').textContent = part.en; host.querySelector('h2').textContent = part.title; host.querySelector('p').textContent = part.lead;
+      row = document.createElement('div'); row.className = 'row';
+      const b = document.createElement('b'); b.textContent = part.short || part.title; row.appendChild(b); nav.appendChild(row);
+      secs = cfg.sections.filter(x => x.part === part.id);
     }
-    main.appendChild(el);
+    for (const sec of secs) {
+      const a = document.createElement('a'); a.href = '#' + sec.id; a.textContent = sec.title; row.appendChild(a);
+      const el = document.createElement('section'); el.id = sec.id;
+      el.innerHTML = `<header><div class="eyebrow"></div><${hs}></${hs}><p></p></header><div class="grid"></div>`;
+      el.querySelector('.eyebrow').textContent = sec.en; el.querySelector(hs).textContent = sec.title; el.querySelector('p').textContent = sec.lead;
+      const grid = el.querySelector('.grid'); if (cfg.minCol) grid.style.setProperty('--min', cfg.minCol + 'px');
+      for (const it of cfg.items.filter(x => x.s === sec.id)) {
+        const card = document.createElement('article'); card.className = 'card';
+        const st = document.createElement('div'); st.className = 'stage3d'; st.tabIndex = 0; st.style.setProperty('--ar', cfg.aspect || '1');
+        st.setAttribute('role', 'img'); st.setAttribute('aria-label', it.name + '（ドラッグで回転）');
+        const meta = document.createElement('div'); meta.className = 'meta';
+        meta.innerHTML = `<${hc}></${hc}><code></code><p></p>` + (it.hint ? '<p class="hint"></p>' : '');
+        meta.querySelector(hc).textContent = it.name; meta.querySelector('code').textContent = it.tag; meta.querySelector('p').textContent = it.desc;
+        if (it.hint) meta.querySelector('.hint').textContent = it.hint;
+        card.append(st, meta); grid.appendChild(card);
+        views.push({ el: st, it, v: null, rx: cfg.rx !== undefined ? cfg.rx : 0, ry: cfg.ry !== undefined ? cfg.ry : 0, drag: null, last: -1e9 });
+      }
+      host.appendChild(el);
+    }
+    if (part) main.appendChild(host);
   }
   if (typeof THREE === 'undefined') { fail('3D描画ライブラリを読み込めませんでした。ページを再読み込みしてください。'); return; }
   const canvas = document.getElementById('gl');
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); } catch (e) { fail('このブラウザでは WebGL が使えないため、描画できません。'); return; }
   renderer.setPixelRatio(DPR); renderer.setClearColor(0x000000, 0);
-  renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1;
+  renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = cfg.exposure || 1;
   if (cfg.shadows) { renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap; }
 
   const ctx = { renderer, DPR };
@@ -49,13 +66,16 @@ function run(cfg) {
   };
   if (cfg.setup) cfg.setup(ctx);
 
+  /* drag speed [x, y] and the allowed tilt range [min, max] (radians) */
+  const [sx, sy] = cfg.drag || [.01, .006], [lo, hi] = cfg.tilt || [-.6, .9];
+  const tilt = (x) => Math.max(lo, Math.min(hi, x));
   for (const v of views) {
     const el = v.el;
     el.addEventListener('pointerdown', (e) => { v.drag = { x: e.clientX, y: e.clientY, id: e.pointerId }; try { el.setPointerCapture(e.pointerId); } catch (_) {} });
-    el.addEventListener('pointermove', (e) => { if (!v.drag || v.drag.id !== e.pointerId) return; v.ry += (e.clientX - v.drag.x) * .01; v.rx = Math.max(-.6, Math.min(.9, v.rx + (e.clientY - v.drag.y) * .006)); v.drag.x = e.clientX; v.drag.y = e.clientY; v.last = performance.now(); });
+    el.addEventListener('pointermove', (e) => { if (!v.drag || v.drag.id !== e.pointerId) return; v.ry += (e.clientX - v.drag.x) * sx; v.rx = tilt(v.rx + (e.clientY - v.drag.y) * sy); v.drag.x = e.clientX; v.drag.y = e.clientY; v.last = performance.now(); });
     const end = () => { v.drag = null; v.last = performance.now(); };
     el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
-    el.addEventListener('keydown', (e) => { const k = { ArrowLeft: [0, -.2], ArrowRight: [0, .2], ArrowUp: [-.1, 0], ArrowDown: [.1, 0] }[e.key]; if (k) { e.preventDefault(); v.rx = Math.max(-.6, Math.min(.9, v.rx + k[0])); v.ry += k[1]; v.last = performance.now(); } });
+    el.addEventListener('keydown', (e) => { const k = { ArrowLeft: [0, -.2], ArrowRight: [0, .2], ArrowUp: [-.1, 0], ArrowDown: [.1, 0] }[e.key]; if (k) { e.preventDefault(); v.rx = tilt(v.rx + k[0]); v.ry += k[1]; v.last = performance.now(); } });
   }
   const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let prev = performance.now(); const t0 = prev;

@@ -55,8 +55,6 @@
 └── .github/workflows/pages.yml   GitHub Pages への自動公開
 ```
 
-`material`・`furfluid`・`danmaku` の3冊は最初に作った図鑑で、共通処理を使わず1つの `index.html` に全部入っています。残りの12冊は `assets/js/g2d.js` または `g3d.js` の上に `main.js` を載せる形です。どちらの形でも同じように一覧に並びます。
-
 ## 注意
 
 - フォントは Google Fonts から読み込みます。読み込めない環境では、端末にある日本語フォントで表示されます。
