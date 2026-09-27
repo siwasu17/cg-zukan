@@ -35,7 +35,7 @@ const ITEMS = [
     make: (ctx) => { const S = stage(ctx); S.scene.add(dirLight(0xffffff, 5.34, [-3, 4.2, 2.2])); S.scene.add(new THREE.AmbientLight(0xffffff, .38)); return S; } },
   { s: 'types', name: '点光源', tag: 'PointLight · 周回',
     desc: '1点から全方向に広がる光。電球やろうそくの光です。光源が物体の周りを回っているので、影が放射状に伸びたり縮んだりします。光源から離れるほど暗くなります。',
-    make: (ctx) => { const S = stage(ctx); const l = new THREE.PointLight(0xffe2b0, 14, 9, 2); l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.bias = -.002; S.scene.add(l); S.scene.add(new THREE.AmbientLight(0xffffff, .16));
+    make: (ctx) => { const S = stage(ctx); const l = new THREE.PointLight(0xffe2b0, 16, 9, 2); l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.bias = -.002; S.scene.add(l); S.scene.add(new THREE.AmbientLight(0xffffff, .16));
       const sync = bulb(S.scene, l); S.update = (t) => { l.position.set(Math.cos(t * .7) * 1.7, 1.25 + Math.sin(t * 1.1) * .25, Math.sin(t * .7) * 1.7); sync(); }; return S; } },
   { s: 'types', name: 'スポットライト', tag: 'SpotLight · angle · penumbra',
     desc: '1点から円すいの形に広がる光。舞台の照明や懐中電灯です。光の広がる角度と、ふちのぼかし具合（ペナンブラ）を決められます。照らす先をゆっくり動かしています。',
@@ -80,7 +80,7 @@ const ITEMS = [
     desc: '左端の低い位置に電球を1つ置き、同じ白い球を等間隔に並べています。現実の光は距離の2乗に比例して弱くなるので、少し離れるだけで急に暗くなります。',
     make: (ctx) => { const S = stage(ctx, { floorGeo: new THREE.PlaneGeometry(7, 4) }); S.objs.forEach(o => o.visible = false);
       for (let i = 0; i < 6; i++) { const m = new THREE.Mesh(new THREE.SphereGeometry(.24, 32, 24), new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: .5 })); m.position.set(-1.9 + i * .78, .24, 0); m.castShadow = m.receiveShadow = true; S.root.add(m); }
-      const l = new THREE.PointLight(0xffe7c0, 16, 0, 2); l.position.set(-2.6, .45, .25); l.castShadow = true; S.root.add(l); const bm = new THREE.Mesh(new THREE.SphereGeometry(.07, 16, 12), new THREE.MeshBasicMaterial({ color: 0xfff2d0 })); bm.position.copy(l.position); S.root.add(bm); S.noSpin = true; return S; } },
+      const l = new THREE.PointLight(0xffe7c0, 24, 0, 2); l.position.set(-2.6, .45, .25); l.castShadow = true; S.root.add(l); const bm = new THREE.Mesh(new THREE.SphereGeometry(.07, 16, 12), new THREE.MeshBasicMaterial({ color: 0xfff2d0 })); bm.position.copy(l.position); S.root.add(bm); S.noSpin = true; return S; } },
   { s: 'props', name: '照り返し（間接光）', tag: '色のついた壁 + 補助の光',
     desc: '赤い壁と緑の壁の部屋に白い球を置いています。現実では壁ではね返った光で球の左右がうっすら赤と緑に染まります。本物の間接光の計算は重いので、ここでは壁の近くに弱い色つきの光を置いてまねしています。約3秒ごとに、その補助の光を入れたり消したりしています。',
     make: (ctx) => { const scene = new THREE.Scene(); scene.background = new THREE.Color(0x121316); const camera = new THREE.PerspectiveCamera(38, 1, .1, 30); camera.position.set(0, 1.1, 4.2); camera.lookAt(0, 1, 0); const root = new THREE.Group(); scene.add(root);
@@ -90,7 +90,7 @@ const ITEMS = [
       const lamp = new THREE.Mesh(new THREE.PlaneGeometry(.6, .6), new THREE.MeshBasicMaterial({ color: 0xffffff })); lamp.position.set(0, 2.39, 0); lamp.rotation.x = PI / 2; root.add(lamp);
       const key = new THREE.PointLight(0xffffff, 13, 0, 2); key.position.set(0, 2.2, 0); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); root.add(key); root.add(new THREE.AmbientLight(0xffffff, .19));
       const red = new THREE.PointLight(0xff3020, 0, 2.2, 2); red.position.set(-.95, .6, .2); const grn = new THREE.PointLight(0x30ff60, 0, 2.2, 2); grn.position.set(.95, .6, .2); root.add(red, grn);
-      return { scene, camera, root, noSpin: true, update: (t) => { const on = Math.floor(t / 3) % 2 === 0 ? 1 : 0; red.intensity += (on * .42 - red.intensity) * .1; grn.intensity += (on * .42 - grn.intensity) * .1; } }; } },
+      return { scene, camera, root, noSpin: true, update: (t) => { const on = Math.floor(t / 3) % 2 === 0 ? 1 : 0; red.intensity += (on * .25 - red.intensity) * .1; grn.intensity += (on * .25 - grn.intensity) * .1; } }; } },
   { s: 'props', name: '色のついた光', tag: 'オレンジ × 青の2灯',
     desc: '左からオレンジ、右から青の光を当てています。どちらか一方の光しか届かない場所は、その色に染まります。影の中も真っ黒ではなく、もう一方の光の色になっているのに注目してください。',
     make: (ctx) => { const S = stage(ctx); S.objs.forEach(o => o.material.color.set(0xeeeeee)); S.scene.add(dirLight(0xff9a3a, 4.4, [-3.5, 3.5, 1.5]), dirLight(0x3a8aff, 4.4, [3.5, 3.5, 1.5])); return S; } },
@@ -102,8 +102,8 @@ const ITEMS = [
   { s: 'props', name: '光る物体とその光', tag: 'emissive + PointLight',
     desc: '「光っているように見える材質（発光）」と「周りを照らす光源」は、3DCGでは別物です。ここではランプの球を発光させ、その中心に点光源を置いて、両方をそろえて使っています。炎のように少し揺らしています。',
     make: (ctx) => { const S = stage(ctx, { bg: new THREE.Color(0x0b0c10) }); S.sphere.visible = false; const lamp = new THREE.Mesh(new THREE.SphereGeometry(.16, 32, 24), new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffb45a, emissiveIntensity: 3 })); lamp.position.set(-.5, .45, .1); S.root.add(lamp);
-      const l = new THREE.PointLight(0xffa048, 4.8, 6, 2); l.position.copy(lamp.position); l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.bias = -.003; S.root.add(l); S.scene.add(new THREE.AmbientLight(0x3050a0, .25));
-      S.update = (t) => { const f = .85 + .15 * Math.sin(t * 13) * Math.sin(t * 7.3); l.intensity = 4.8 * f; lamp.material.emissiveIntensity = 3 * f; }; return S; } },
+      const l = new THREE.PointLight(0xffa048, 3.5, 6, 2); l.position.copy(lamp.position); l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.bias = -.003; S.root.add(l); S.scene.add(new THREE.AmbientLight(0x3050a0, .25));
+      S.update = (t) => { const f = .85 + .15 * Math.sin(t * 13) * Math.sin(t * 7.3); l.intensity = 3.5 * f; lamp.material.emissiveIntensity = 3 * f; }; return S; } },
 
   /* design */
   { s: 'design', name: '3点照明', tag: 'キー + フィル + リム',
@@ -124,7 +124,7 @@ const ITEMS = [
     desc: '暗い青の月明かりで全体をうっすら照らし、手前に暖かい色の街灯を1つ置きました。明るさを抑えて色の差をつけると、夜の場面らしくなります。',
     make: (ctx) => { const bg = ctx.tex(64, 256, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#05081a'); gr.addColorStop(1, '#1a2448'); g.fillStyle = gr; g.fillRect(0, 0, w, h); });
       const S = stage(ctx, { bg }); S.scene.add(dirLight(0x7a9cff, 1.73, [3, 4, -2]), new THREE.AmbientLight(0x2030a0, .38));
-      const l = new THREE.PointLight(0xffb060, 7.1, 5, 2); l.position.set(.9, 1.3, .9); l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.bias = -.003; S.root.add(l);
+      const l = new THREE.PointLight(0xffb060, 5.5, 5, 2); l.position.set(.9, 1.3, .9); l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.bias = -.003; S.root.add(l);
       const post = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, 1.3, 12), new THREE.MeshStandardMaterial({ color: 0x222228 })); post.position.set(.9, .65, .9); S.root.add(post);
       const glow = new THREE.Mesh(new THREE.SphereGeometry(.08, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffd9a0 })); glow.position.copy(l.position); S.root.add(glow); return S; } }
 ];
